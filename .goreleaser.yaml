@@ -5,6 +5,7 @@ before:
     # You may remove this if you don't use go modules.
     - go mod tidy
     - go mod vendor
+    - make lint
     - make tools
     - make test
 archives:

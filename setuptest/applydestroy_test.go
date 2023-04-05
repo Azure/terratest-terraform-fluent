@@ -38,7 +38,7 @@ func TestApplyIdempotentRetryFail(t *testing.T) {
 	}
 	test, err := Dirs("testdata/applyidempotentretryfail", "").WithVars(nil).InitPlanShow(t)
 	require.NoError(t, err)
-	defer test.Destroy(t)
+	defer test.Destroy(t) //nolint:errcheck
 	tb := time.Now()
 	err = test.ApplyIdempotentRetry(t, rty).AsError()
 	assert.Truef(t, time.Since(tb) > 20*time.Second, "retry should have waited at least 20 second")
