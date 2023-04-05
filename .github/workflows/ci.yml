@@ -27,6 +27,8 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: 1.19
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
       - name: test cover
         run: make testcoverfile
       # - name: upload coverage reports to codecov
