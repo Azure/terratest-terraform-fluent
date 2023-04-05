@@ -1,33 +1,47 @@
-# Project
+# terratest-terraform-fluent
 
-> This repo has been populated by an initial template to help get you started. Please
-> make sure to update the content to build a great experience for community-building.
+<!-- [![codecov](https://codecov.io/gh/Azure/terratest-terraform-fluent/branch/main/graph/badge.svg?token=T06F6LV6Z9)](https://codecov.io/gh/Azure/terratest-terraform-fluent) -->
 
-As the maintainer of this project, please make a few updates:
+Terratest extension package for testing Terraform code with fluent assertions.
 
-- Improving this README.MD file to provide a great experience
-- Updating SUPPORT.MD with content about this project's support experience
-- Understanding the security reporting process in SECURITY.MD
-- Remove this section from the README
+## Usage
 
-## Contributing
+```go
+package test
 
-This project welcomes contributions and suggestions.  Most contributions require you to agree to a
-Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
-the rights to use your contribution. For details, visit https://cla.opensource.microsoft.com.
+import (
+  "testing"
 
-When you submit a pull request, a CLA bot will automatically determine whether you need to provide
-a CLA and decorate the PR appropriately (e.g., status check, comment). Simply follow the instructions
-provided by the bot. You will only need to do this once across all repos using our CLA.
+  "github.com/matt-FFFFFF/terratest-terraform-fluent/check"
+  "github.com/matt-FFFFFF/terratest-terraform-fluent/setuptest"
+  "github.com/stretchr/testify/assert"
+  "github.com/stretchr/testify/require"
+)
 
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
-For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
-contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+const(
+  basicTestData = "testdata/basic"
+)
 
-## Trademarks
+func TestSomeTerraform( t *testing.T) {
+  // Set up the Terraform test and run terraform init, plan and show,
+  // saving the plan output to a struct.
+  // The returned struct in tftest contains the plan struct, and the clean up func.
+  //
+  // The Dirs inputs are the test root directory and the relative path to the test code.
+  // (this must be a subdirectory of the test root directory)
+  // The WithVars inputs are the Terraform variables to pass to the test.
+  // The InitAndPlanAndShowWithStruct input is the testing.T pointer.
+  tftest, err := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
+  require.NoError(t, err)
+  defer tftest.Cleanup()
 
-This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft 
-trademarks or logos is subject to and must follow 
-[Microsoft's Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general).
-Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship.
-Any use of third-party trademarks or logos are subject to those third-party's policies.
+  // Check that the plan contains the expected number of resources.
+  check.InPlan(tftest.Plan).NumberOfResourcesEquals(1).ErrorIsNil(t)
+
+  // Check that the plan contains the expected resource, with an attribute called `my_attribute` and
+  // a corresponding value of `my_value`.
+  check.InPlan(tftest.Plan).That("my_terraform_resource.name").Key("my_attribute").HasValue("my_value").ErrorIsNil(t)
+  defer tftest.Destroy(t)
+  tftest.ApplyIdempotent(t).ErrorIsNil(t)
+}
+```
