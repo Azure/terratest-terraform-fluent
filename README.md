@@ -1,6 +1,5 @@
 # terratest-terraform-fluent
-
-<!-- [![codecov](https://codecov.io/gh/Azure/terratest-terraform-fluent/branch/main/graph/badge.svg?token=T06F6LV6Z9)](https://codecov.io/gh/Azure/terratest-terraform-fluent) -->
+[![codecov](https://codecov.io/gh/Azure/terratest-terraform-fluent/branch/main/graph/badge.svg?token=oBG1qFc8S6)](https://codecov.io/gh/Azure/terratest-terraform-fluent)
 
 Terratest extension package for testing Terraform code with fluent assertions.
 
