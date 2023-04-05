@@ -12,8 +12,8 @@ package test
 import (
   "testing"
 
-  "github.com/matt-FFFFFF/terratest-terraform-fluent/check"
-  "github.com/matt-FFFFFF/terratest-terraform-fluent/setuptest"
+  "github.com/Azure/terratest-terraform-fluent/check"
+  "github.com/Azure/terratest-terraform-fluent/setuptest"
   "github.com/stretchr/testify/assert"
   "github.com/stretchr/testify/require"
 )
