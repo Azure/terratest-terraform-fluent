@@ -8,6 +8,7 @@ on:
       - edited
       - synchronize
   merge_group:
+    types: [checks_requested]
 
 permissions:
   pull-requests: read
