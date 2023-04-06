@@ -185,7 +185,7 @@ github.com/googleapis/gax-go/v2/internal
 ## explicit; go 1.18
 github.com/gruntwork-io/go-commons/collections
 github.com/gruntwork-io/go-commons/errors
-# github.com/gruntwork-io/terratest v0.41.16
+# github.com/gruntwork-io/terratest v0.41.17
 ## explicit; go 1.18
 github.com/gruntwork-io/terratest/modules/aws
 github.com/gruntwork-io/terratest/modules/collections
