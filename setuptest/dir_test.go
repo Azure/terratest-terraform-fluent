@@ -15,6 +15,13 @@ func TestDirs(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestDirsWithVarFiles(t *testing.T) {
+	t.Parallel()
+	vf := []string{"vars.tfvars"}
+	_, err := Dirs("testdata/with-var-files", "").WithVarFiles(vf).InitPlanShow(t)
+	require.NoError(t, err)
+}
+
 func TestDirsWithFunc(t *testing.T) {
 	t.Parallel()
 
