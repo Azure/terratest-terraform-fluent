@@ -22,6 +22,22 @@ func TestDirsWithVarFiles(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestDirsWithVarFilesWithFunc(t *testing.T) {
+	t.Parallel()
+
+	var f PrepFunc = func(resp Response) error {
+		f, err := os.Create(filepath.Join(resp.TmpDir, "test.txt"))
+		if err != nil {
+			return err
+		}
+		return f.Close()
+	}
+
+	vf := []string{"vars.tfvars"}
+	_, err := Dirs("testdata/with-var-files", "").WithVarFiles(vf).InitPlanShowWithPrepFunc(t, f)
+	require.NoError(t, err)
+}
+
 func TestDirsWithFunc(t *testing.T) {
 	t.Parallel()
 
