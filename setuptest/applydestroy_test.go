@@ -41,6 +41,6 @@ func TestApplyIdempotentRetryFail(t *testing.T) {
 	defer test.Destroy(t) //nolint:errcheck
 	tb := time.Now()
 	err = test.ApplyIdempotentRetry(t, rty).AsError()
-	assert.Truef(t, time.Since(tb) > 20*time.Second, "retry should have waited at least 20 second")
+	assert.Truef(t, time.Since(tb) >= 20*time.Second, "retry should have waited at least 20 second")
 	assert.ErrorContains(t, err, "terraform configuration not idempotent")
 }

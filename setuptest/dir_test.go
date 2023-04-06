@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -15,10 +16,21 @@ func TestDirs(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestDirsWithVars(t *testing.T) {
+	t.Parallel()
+	vars := map[string]interface{}{
+		"test": "testing",
+	}
+	tftest, err := Dirs("testdata/with-vars", "").WithVars(vars).InitPlanShow(t)
+	defer tftest.Cleanup()
+	assert.Equal(t, "testing", tftest.Plan.RawPlan.OutputChanges["test"].After)
+	require.NoError(t, err)
+}
+
 func TestDirsWithVarFiles(t *testing.T) {
 	t.Parallel()
 	vf := []string{"vars.tfvars"}
-	_, err := Dirs("testdata/with-var-files", "").WithVarFiles(vf).InitPlanShow(t)
+	_, err := Dirs("testdata/with-vars", "").WithVarFiles(vf).InitPlanShow(t)
 	require.NoError(t, err)
 }
 
@@ -34,7 +46,9 @@ func TestDirsWithVarFilesWithFunc(t *testing.T) {
 	}
 
 	vf := []string{"vars.tfvars"}
-	_, err := Dirs("testdata/with-var-files", "").WithVarFiles(vf).InitPlanShowWithPrepFunc(t, f)
+	tftest, err := Dirs("testdata/with-vars", "").WithVarFiles(vf).InitPlanShowWithPrepFunc(t, f)
+	defer tftest.Cleanup()
+	assert.Equal(t, "testing", tftest.Plan.RawPlan.OutputChanges["test"].After)
 	require.NoError(t, err)
 }
 
