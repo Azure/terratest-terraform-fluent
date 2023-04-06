@@ -31,9 +31,23 @@ func TestErrorContains(t *testing.T) {
 	e.ErrorContains(t, "test")
 }
 
+func TestErrorContainsFail(t *testing.T) {
+	e := New("test error")
+	var t1 testing.T
+	e.ErrorContains(&t1, "fail")
+	assert.True(t, t1.Failed())
+}
+
 func TestErrorNotContains(t *testing.T) {
 	e := New("test error")
 	e.ErrorNotContains(t, "notcontained")
+}
+
+func TestErrorNotContainsFail(t *testing.T) {
+	e := New("test error")
+	var t1 testing.T
+	e.ErrorNotContains(&t1, "test")
+	assert.True(t, t1.Failed())
 }
 
 func TestErrorIsNil(t *testing.T) {
@@ -42,16 +56,34 @@ func TestErrorIsNil(t *testing.T) {
 }
 
 func TestErrorIsNilFail(t *testing.T) {
-	ce := New("test error")
+	e := New("test error")
 	var t1 testing.T
-	ce.ErrorIsNil(&t1)
+	e.ErrorIsNil(&t1)
 	assert.True(t, t1.Failed())
+}
+
+func TestErrorIsNilFatal(t *testing.T) {
+	var e *Error = nil
+	e.ErrorIsNilFatal(t)
+}
+
+func TestErrorNotNilFatal(t *testing.T) {
+	var e *Error = New("test error")
+	e.ErrorNotNilFatal(t)
 }
 
 func TestErrorAsError(t *testing.T) {
 	var e *Error
 	assert.Nil(t, e)
 	assert.NoError(
+		t,
+		e.AsError(),
+	)
+}
+
+func TestErrorAsErrorNotNil(t *testing.T) {
+	var e *Error = New("test error")
+	assert.Error(
 		t,
 		e.AsError(),
 	)
