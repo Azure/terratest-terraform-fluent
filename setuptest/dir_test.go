@@ -67,3 +67,35 @@ func TestDirsWithFunc(t *testing.T) {
 	require.NoError(t, err)
 	require.FileExists(t, filepath.Join(test.TmpDir, "test.txt"))
 }
+
+func TestDirsNotExist(t *testing.T) {
+	t.Parallel()
+
+	_, err := Dirs("testdata/notexist", "").WithVars(nil).InitPlanShow(t)
+
+	require.True(t, os.IsNotExist(err))
+}
+
+func TestDirsWithFuncNotExist(t *testing.T) {
+	t.Parallel()
+
+	_, err := Dirs("testdata/notexist", "").WithVars(nil).InitPlanShowWithPrepFunc(t, nil)
+
+	require.True(t, os.IsNotExist(err))
+}
+
+func TestDirsWithVarFilesNotExist(t *testing.T) {
+	t.Parallel()
+
+	_, err := Dirs("testdata/notexist", "").WithVarFiles(nil).InitPlanShow(t)
+
+	require.True(t, os.IsNotExist(err))
+}
+
+func TestDirsWithVarFilesWithFuncNotExist(t *testing.T) {
+	t.Parallel()
+
+	_, err := Dirs("testdata/notexist", "").WithVarFiles(nil).InitPlanShowWithPrepFunc(t, nil)
+
+	require.True(t, os.IsNotExist(err))
+}
