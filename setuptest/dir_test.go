@@ -1,6 +1,7 @@
 package setuptest
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"testing"
@@ -98,4 +99,15 @@ func TestDirsWithVarFilesWithFuncNotExist(t *testing.T) {
 	_, err := Dirs("testdata/notexist", "").WithVarFiles(nil).InitPlanShowWithPrepFunc(t, nil)
 
 	require.True(t, os.IsNotExist(err))
+}
+
+func TestDirsWithFuncErr(t *testing.T) {
+	t.Parallel()
+
+	var f PrepFunc = func(resp Response) error {
+		return errors.New("test error")
+	}
+
+	_, err := Dirs("testdata/depth1", "").WithVars(map[string]interface{}{}).InitPlanShowWithPrepFunc(t, f)
+	require.ErrorContains(t, err, "test error")
 }
