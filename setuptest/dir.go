@@ -106,10 +106,10 @@ func (dtv DirTypeWithVars) InitPlanShow(t *testing.T) (Response, error) {
 	return resp, err
 }
 
-// InitPlanShow is a wrapper around terraform.InitAndPlanAndShowWithStructE
+// InitPlanShowWithPrepFunc is a wrapper around terraform.InitAndPlanAndShowWithStructE
 // It takes a test object and a SetupTestPrepFunc as a parameter and returns a SetupTestResponse.
-// The PrepFunc is executed after the test has been coped to a tmp directory,
-// allowing file modifications to be made before running terraform.
+// The PrepFunc is executed after the test has been copied to a tmp directory,
+// allowing file modifications to be made before running Terraform.
 //
 // The SetupTestResponse contains the temporary directory, the plan, the Terraform options and a cleanup function.
 // The temporary directory is the directory containing a copy of the code specified by the Dirs func.

@@ -5,16 +5,19 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 )
 
+// InPlan is the entry point for checking the Terraform plan.
 func InPlan(plan *terraform.PlanStruct) PlanType {
 	return PlanType{
 		Plan: plan,
 	}
 }
 
+// PlanType is a type which can be used for more fluent assertions on the Terraform plan.
 type PlanType struct {
 	Plan *terraform.PlanStruct
 }
 
+// NumberOfResourcesEquals checks that the number of resources in the plan is equal to the expected number.
 func (p PlanType) NumberOfResourcesEquals(expected int) *testerror.Error {
 	actual := len(p.Plan.ResourcePlannedValuesMap)
 	if actual != expected {
