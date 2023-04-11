@@ -1444,6 +1444,9 @@ func (c *RDS) CreateCustomDBEngineVersionRequest(input *CreateCustomDBEngineVers
 //   - ErrCodeKMSKeyNotAccessibleFault "KMSKeyNotAccessibleFault"
 //     An error occurred accessing an Amazon Web Services KMS key.
 //
+//   - ErrCodeCreateCustomDBEngineVersionFault "CreateCustomDBEngineVersionFault"
+//     An error occurred while trying to create the CEV.
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/rds-2014-10-31/CreateCustomDBEngineVersion
 func (c *RDS) CreateCustomDBEngineVersion(input *CreateCustomDBEngineVersionInput) (*CreateCustomDBEngineVersionOutput, error) {
 	req, out := c.CreateCustomDBEngineVersionRequest(input)
@@ -1511,16 +1514,22 @@ func (c *RDS) CreateDBClusterRequest(input *CreateDBClusterInput) (req *request.
 //
 // Creates a new Amazon Aurora DB cluster or Multi-AZ DB cluster.
 //
+// If you create an Aurora DB cluster, the request creates an empty cluster.
+// You must explicitly create the writer instance for your DB cluster using
+// the CreateDBInstance (https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_CreateDBInstance.html)
+// operation. If you create a Multi-AZ DB cluster, the request creates a writer
+// and two reader DB instances for you, each in a different Availability Zone.
+//
 // You can use the ReplicationSourceIdentifier parameter to create an Amazon
-// Aurora DB cluster as a read replica of another DB cluster or Amazon RDS MySQL
-// or PostgreSQL DB instance. For more information about Amazon Aurora, see
-// What is Amazon Aurora? (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/CHAP_AuroraOverview.html)
+// Aurora DB cluster as a read replica of another DB cluster or Amazon RDS for
+// MySQL or PostgreSQL DB instance. For more information about Amazon Aurora,
+// see What is Amazon Aurora? (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/CHAP_AuroraOverview.html)
 // in the Amazon Aurora User Guide.
 //
 // You can also use the ReplicationSourceIdentifier parameter to create a Multi-AZ
-// DB cluster read replica with an RDS for PostgreSQL DB instance as the source.
-// For more information about Multi-AZ DB clusters, see Multi-AZ DB cluster
-// deployments (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/multi-az-db-clusters-concepts.html)
+// DB cluster read replica with an RDS for MySQL or PostgreSQL DB instance as
+// the source. For more information about Multi-AZ DB clusters, see Multi-AZ
+// DB cluster deployments (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/multi-az-db-clusters-concepts.html)
 // in the Amazon RDS User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -2136,19 +2145,22 @@ func (c *RDS) CreateDBInstanceReadReplicaRequest(input *CreateDBInstanceReadRepl
 // CreateDBInstanceReadReplica API operation for Amazon Relational Database Service.
 //
 // Creates a new DB instance that acts as a read replica for an existing source
-// DB instance. You can create a read replica for a DB instance running MySQL,
-// MariaDB, Oracle, PostgreSQL, or SQL Server. For more information, see Working
-// with Read Replicas (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_ReadRepl.html)
+// DB instance or Multi-AZ DB cluster. You can create a read replica for a DB
+// instance running MySQL, MariaDB, Oracle, PostgreSQL, or SQL Server. You can
+// create a read replica for a Multi-AZ DB cluster running MySQL or PostgreSQL.
+// For more information, see Working with read replicas (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_ReadRepl.html)
+// and Migrating from a Multi-AZ DB cluster to a DB instance using a read replica
+// (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/multi-az-db-clusters-concepts.html#multi-az-db-clusters-migrating-to-instance-with-read-replica)
 // in the Amazon RDS User Guide.
 //
 // Amazon Aurora doesn't support this operation. Call the CreateDBInstance operation
 // to create a DB instance for an Aurora DB cluster.
 //
 // All read replica DB instances are created with backups disabled. All other
-// DB instance attributes (including DB security groups and DB parameter groups)
-// are inherited from the source DB instance, except as specified.
+// attributes (including DB security groups and DB parameter groups) are inherited
+// from the source DB instance or cluster, except as specified.
 //
-// Your source DB instance must have backup retention enabled.
+// Your source DB instance or cluster must have backup retention enabled.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2182,8 +2194,14 @@ func (c *RDS) CreateDBInstanceReadReplicaRequest(input *CreateDBInstanceReadRepl
 //   - ErrCodeDBInstanceNotFoundFault "DBInstanceNotFound"
 //     DBInstanceIdentifier doesn't refer to an existing DB instance.
 //
+//   - ErrCodeDBClusterNotFoundFault "DBClusterNotFoundFault"
+//     DBClusterIdentifier doesn't refer to an existing DB cluster.
+//
 //   - ErrCodeInvalidDBInstanceStateFault "InvalidDBInstanceState"
 //     The DB instance isn't in a valid state.
+//
+//   - ErrCodeInvalidDBClusterStateFault "InvalidDBClusterStateFault"
+//     The requested operation can't be performed while the cluster is in this state.
 //
 //   - ErrCodeDBSubnetGroupNotFoundFault "DBSubnetGroupNotFoundFault"
 //     DBSubnetGroupName doesn't refer to an existing DB subnet group.
@@ -3370,6 +3388,9 @@ func (c *RDS) DeleteDBClusterRequest(input *DeleteDBClusterInput) (req *request.
 // you delete a DB cluster, all automated backups for that DB cluster are deleted
 // and can't be recovered. Manual DB cluster snapshots of the specified DB cluster
 // are not deleted.
+//
+// If you're deleting a Multi-AZ DB cluster with read replicas, all cluster
+// members are terminated and read replicas are promoted to standalone instances.
 //
 // For more information on Amazon Aurora, see What is Amazon Aurora? (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/CHAP_AuroraOverview.html)
 // in the Amazon Aurora User Guide.
@@ -14944,11 +14965,11 @@ func (c *RDS) StartExportTaskRequest(input *StartExportTaskInput) (req *request.
 // For more information on exporting DB snapshot data, see Exporting DB snapshot
 // data to Amazon S3 (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_ExportSnapshot.html)
 // in the Amazon RDS User Guide or Exporting DB cluster snapshot data to Amazon
-// S3 (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/aurora-export-snapshot.html)
+// S3 (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-export-snapshot.html)
 // in the Amazon Aurora User Guide.
 //
 // For more information on exporting DB cluster data, see Exporting DB cluster
-// data to Amazon S3 (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/export-cluster-data.html)
+// data to Amazon S3 (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/export-cluster-data.html)
 // in the Amazon Aurora User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -19754,9 +19775,7 @@ type CreateDBClusterInput struct {
 	//
 	// Valid Values:
 	//
-	//    * aurora (for MySQL 5.6-compatible Aurora)
-	//
-	//    * aurora-mysql (for MySQL 5.7-compatible and MySQL 8.0-compatible Aurora)
+	//    * aurora-mysql
 	//
 	//    * aurora-postgresql
 	//
@@ -19769,22 +19788,9 @@ type CreateDBClusterInput struct {
 	// Engine is a required field
 	Engine *string `type:"string" required:"true"`
 
-	// The DB engine mode of the DB cluster, either provisioned, serverless, parallelquery,
-	// global, or multimaster.
-	//
-	// The parallelquery engine mode isn't required for Aurora MySQL version 1.23
-	// and higher 1.x versions, and version 2.09 and higher 2.x versions.
-	//
-	// The global engine mode isn't required for Aurora MySQL version 1.22 and higher
-	// 1.x versions, and global engine mode isn't required for any 2.x versions.
-	//
-	// The multimaster engine mode only applies for DB clusters created with Aurora
-	// MySQL version 5.6.10a.
+	// The DB engine mode of the DB cluster, either provisioned or serverless.
 	//
 	// The serverless engine mode only applies for Aurora Serverless v1 DB clusters.
-	//
-	// For Aurora PostgreSQL, the global engine mode isn't required, and both the
-	// parallelquery and the multimaster engine modes currently aren't supported.
 	//
 	// Limitations and requirements apply to some DB engine modes. For more information,
 	// see the following sections in the Amazon Aurora User Guide:
@@ -19793,26 +19799,22 @@ type CreateDBClusterInput struct {
 	//
 	//    * Requirements for Aurora Serverless v2 (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless-v2.requirements.html)
 	//
-	//    * Limitations of Parallel Query (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-mysql-parallel-query.html#aurora-mysql-parallel-query-limitations)
+	//    * Limitations of parallel query (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-mysql-parallel-query.html#aurora-mysql-parallel-query-limitations)
 	//
-	//    * Limitations of Aurora Global Databases (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-global-database.html#aurora-global-database.limitations)
-	//
-	//    * Limitations of Multi-Master Clusters (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-multi-master.html#aurora-multi-master-limitations)
+	//    * Limitations of Aurora global databases (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-global-database.html#aurora-global-database.limitations)
 	//
 	// Valid for: Aurora DB clusters only
 	EngineMode *string `type:"string"`
 
 	// The version number of the database engine to use.
 	//
-	// To list all of the available engine versions for MySQL 5.6-compatible Aurora,
-	// use the following command:
-	//
-	// aws rds describe-db-engine-versions --engine aurora --query "DBEngineVersions[].EngineVersion"
-	//
-	// To list all of the available engine versions for MySQL 5.7-compatible and
-	// MySQL 8.0-compatible Aurora, use the following command:
+	// To list all of the available engine versions for Aurora MySQL version 2 (5.7-compatible)
+	// and version 3 (MySQL 8.0-compatible), use the following command:
 	//
 	// aws rds describe-db-engine-versions --engine aurora-mysql --query "DBEngineVersions[].EngineVersion"
+	//
+	// You can supply either 5.7 or 8.0 to use the default engine version for Aurora
+	// MySQL version 2 or version 3, respectively.
 	//
 	// To list all of the available engine versions for Aurora PostgreSQL, use the
 	// following command:
@@ -19831,7 +19833,7 @@ type CreateDBClusterInput struct {
 	//
 	// Aurora MySQL
 	//
-	// For information, see MySQL on Amazon RDS Versions (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Updates.html)
+	// For information, see Database engine updates for Amazon Aurora MySQL (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Updates.html)
 	// in the Amazon Aurora User Guide.
 	//
 	// Aurora PostgreSQL
@@ -19842,12 +19844,12 @@ type CreateDBClusterInput struct {
 	//
 	// MySQL
 	//
-	// For information, see MySQL on Amazon RDS Versions (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_MySQL.html#MySQL.Concepts.VersionMgmt)
+	// For information, see Amazon RDS for MySQL (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_MySQL.html#MySQL.Concepts.VersionMgmt)
 	// in the Amazon RDS User Guide.
 	//
 	// PostgreSQL
 	//
-	// For information, see Amazon RDS for PostgreSQL versions and extensions (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html#PostgreSQL.Concepts)
+	// For information, see Amazon RDS for PostgreSQL (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html#PostgreSQL.Concepts)
 	// in the Amazon RDS User Guide.
 	//
 	// Valid for: Aurora DB clusters and Multi-AZ DB clusters
@@ -19862,8 +19864,7 @@ type CreateDBClusterInput struct {
 	// The amount of Provisioned IOPS (input/output operations per second) to be
 	// initially allocated for each DB instance in the Multi-AZ DB cluster.
 	//
-	// For information about valid IOPS values, see Amazon RDS Provisioned IOPS
-	// storage (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Storage.html#USER_PIOPS)
+	// For information about valid IOPS values, see Provisioned IOPS storage (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Storage.html#USER_PIOPS)
 	// in the Amazon RDS User Guide.
 	//
 	// This setting is required to create a Multi-AZ DB cluster.
@@ -20190,7 +20191,7 @@ type CreateDBClusterInput struct {
 	// The Amazon Resource Name (ARN) of the source DB instance or DB cluster if
 	// this DB cluster is created as a read replica.
 	//
-	// Valid for: Aurora DB clusters and RDS for PostgreSQL Multi-AZ DB clusters
+	// Valid for: Aurora DB clusters and Multi-AZ DB clusters
 	ReplicationSourceIdentifier *string `type:"string"`
 
 	// For DB clusters in serverless DB engine mode, the scaling properties of the
@@ -21400,13 +21401,15 @@ type CreateDBInstanceInput struct {
 	//
 	//    * aurora-postgresql
 	//
-	//    * custom-oracle-ee (for RDS Custom for Oracle instances)
+	//    * custom-oracle-ee (for RDS Custom for Oracle DB instances)
 	//
-	//    * custom-sqlserver-ee (for RDS Custom for SQL Server instances)
+	//    * custom-oracle-ee-cdb (for RDS Custom for Oracle DB instances)
 	//
-	//    * custom-sqlserver-se (for RDS Custom for SQL Server instances)
+	//    * custom-sqlserver-ee (for RDS Custom for SQL Server DB instances)
 	//
-	//    * custom-sqlserver-web (for RDS Custom for SQL Server instances)
+	//    * custom-sqlserver-se (for RDS Custom for SQL Server DB instances)
+	//
+	//    * custom-sqlserver-web (for RDS Custom for SQL Server DB instances)
 	//
 	//    * mariadb
 	//
@@ -22441,9 +22444,6 @@ type CreateDBInstanceReadReplicaInput struct {
 	//
 	// Constraints:
 	//
-	//    * Can only be specified if the source DB instance identifier specifies
-	//    a DB instance in another Amazon Web Services Region.
-	//
 	//    * If supplied, must match the name of an existing DBSubnetGroup.
 	//
 	//    * The specified DB subnet group must be in the same Amazon Web Services
@@ -22477,8 +22477,8 @@ type CreateDBInstanceReadReplicaInput struct {
 	// This setting doesn't apply to RDS Custom.
 	Domain *string `type:"string"`
 
-	// Specify the name of the IAM role to be used when making API calls to the
-	// Directory Service.
+	// The name of the IAM role to be used when making API calls to the Directory
+	// Service.
 	//
 	// This setting doesn't apply to RDS Custom.
 	DomainIAMRoleName *string `type:"string"`
@@ -22537,9 +22537,9 @@ type CreateDBInstanceReadReplicaInput struct {
 	// ARN, or alias name for the KMS key.
 	//
 	// If you create an encrypted read replica in the same Amazon Web Services Region
-	// as the source DB instance, then do not specify a value for this parameter.
-	// A read replica in the same Amazon Web Services Region is always encrypted
-	// with the same KMS key as the source DB instance.
+	// as the source DB instance or Multi-AZ DB cluster, don't specify a value for
+	// this parameter. A read replica in the same Amazon Web Services Region is
+	// always encrypted with the same KMS key as the source DB instance or cluster.
 	//
 	// If you create an encrypted read replica in a different Amazon Web Services
 	// Region, then you must specify a KMS key identifier for the destination Amazon
@@ -22547,7 +22547,8 @@ type CreateDBInstanceReadReplicaInput struct {
 	// that they are created in, and you can't use KMS keys from one Amazon Web
 	// Services Region in another Amazon Web Services Region.
 	//
-	// You can't create an encrypted read replica from an unencrypted DB instance.
+	// You can't create an encrypted read replica from an unencrypted DB instance
+	// or Multi-AZ DB cluster.
 	//
 	// This setting doesn't apply to RDS Custom, which uses the same KMS key as
 	// the primary replica.
@@ -22591,7 +22592,7 @@ type CreateDBInstanceReadReplicaInput struct {
 	// You can create a read replica as a Multi-AZ DB instance. RDS creates a standby
 	// of your replica in another Availability Zone for failover support for the
 	// replica. Creating your read replica as a Multi-AZ DB instance is independent
-	// of whether the source database is a Multi-AZ DB instance.
+	// of whether the source is a Multi-AZ DB instance or a Multi-AZ DB cluster.
 	//
 	// This setting doesn't apply to RDS Custom.
 	MultiAZ *bool `type:"boolean"`
@@ -22613,10 +22614,9 @@ type CreateDBInstanceReadReplicaInput struct {
 	NetworkType *string `type:"string"`
 
 	// The option group the DB instance is associated with. If omitted, the option
-	// group associated with the source instance is used.
+	// group associated with the source instance or cluster is used.
 	//
-	// For SQL Server, you must use the option group associated with the source
-	// instance.
+	// For SQL Server, you must use the option group associated with the source.
 	//
 	// This setting doesn't apply to RDS Custom.
 	OptionGroupName *string `type:"string"`
@@ -22676,6 +22676,10 @@ type CreateDBInstanceReadReplicaInput struct {
 	// This setting applies only to Amazon Web Services GovCloud (US) Regions and
 	// China Amazon Web Services Regions. It's ignored in other Amazon Web Services
 	// Regions.
+	//
+	// This setting applies only when replicating from a source DB instance. Source
+	// DB clusters aren't supported in Amazon Web Services GovCloud (US) Regions
+	// and China Amazon Web Services Regions.
 	//
 	// You must specify this parameter when you create an encrypted read replica
 	// from another Amazon Web Services Region by using the Amazon RDS API. Don't
@@ -22770,27 +22774,42 @@ type CreateDBInstanceReadReplicaInput struct {
 	// open mode manually.
 	ReplicaMode *string `type:"string" enum:"ReplicaMode"`
 
+	// The identifier of the Multi-AZ DB cluster that will act as the source for
+	// the read replica. Each DB cluster can have up to 15 read replicas.
+	//
+	// Constraints:
+	//
+	//    * Must be the identifier of an existing Multi-AZ DB cluster.
+	//
+	//    * Can't be specified if the SourceDBInstanceIdentifier parameter is also
+	//    specified.
+	//
+	//    * The specified DB cluster must have automatic backups enabled, that is,
+	//    its backup retention period must be greater than 0.
+	//
+	//    * The source DB cluster must be in the same Amazon Web Services Region
+	//    as the read replica. Cross-Region replication isn't supported.
+	SourceDBClusterIdentifier *string `type:"string"`
+
 	// The identifier of the DB instance that will act as the source for the read
-	// replica. Each DB instance can have up to five read replicas.
+	// replica. Each DB instance can have up to 15 read replicas, with the exception
+	// of Oracle and SQL Server, which can have up to five.
 	//
 	// Constraints:
 	//
 	//    * Must be the identifier of an existing MySQL, MariaDB, Oracle, PostgreSQL,
 	//    or SQL Server DB instance.
 	//
-	//    * Can specify a DB instance that is a MySQL read replica only if the source
-	//    is running MySQL 5.6 or later.
+	//    * Can't be specified if the SourceDBClusterIdentifier parameter is also
+	//    specified.
 	//
-	//    * For the limitations of Oracle read replicas, see Read Replica Limitations
-	//    with Oracle (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/oracle-read-replicas.html)
+	//    * For the limitations of Oracle read replicas, see Version and licensing
+	//    considerations for RDS for Oracle replicas (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/oracle-read-replicas.limitations.html#oracle-read-replicas.limitations.versions-and-licenses)
 	//    in the Amazon RDS User Guide.
 	//
-	//    * For the limitations of SQL Server read replicas, see Read Replica Limitations
-	//    with Microsoft SQL Server (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/SQLServer.ReadReplicas.Limitations.html)
+	//    * For the limitations of SQL Server read replicas, see Read replica limitations
+	//    with SQL Server (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/SQLServer.ReadReplicas.html#SQLServer.ReadReplicas.Limitations)
 	//    in the Amazon RDS User Guide.
-	//
-	//    * Can specify a PostgreSQL DB instance only if the source is running PostgreSQL
-	//    9.3.5 or later (9.4.7 and higher for cross-Region replication).
 	//
 	//    * The specified DB instance must have automatic backups enabled, that
 	//    is, its backup retention period must be greater than 0.
@@ -22803,9 +22822,7 @@ type CreateDBInstanceReadReplicaInput struct {
 	//    see Constructing an ARN for Amazon RDS (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Tagging.ARN.html#USER_Tagging.ARN.Constructing)
 	//    in the Amazon RDS User Guide. This doesn't apply to SQL Server or RDS
 	//    Custom, which don't support cross-Region replicas.
-	//
-	// SourceDBInstanceIdentifier is a required field
-	SourceDBInstanceIdentifier *string `type:"string" required:"true"`
+	SourceDBInstanceIdentifier *string `type:"string"`
 
 	// SourceRegion is the source region where the resource exists. This is not
 	// sent over the wire and is only used for presigning. This value should always
@@ -22867,9 +22884,6 @@ func (s *CreateDBInstanceReadReplicaInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "CreateDBInstanceReadReplicaInput"}
 	if s.DBInstanceIdentifier == nil {
 		invalidParams.Add(request.NewErrParamRequired("DBInstanceIdentifier"))
-	}
-	if s.SourceDBInstanceIdentifier == nil {
-		invalidParams.Add(request.NewErrParamRequired("SourceDBInstanceIdentifier"))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -23067,6 +23081,12 @@ func (s *CreateDBInstanceReadReplicaInput) SetPubliclyAccessible(v bool) *Create
 // SetReplicaMode sets the ReplicaMode field's value.
 func (s *CreateDBInstanceReadReplicaInput) SetReplicaMode(v string) *CreateDBInstanceReadReplicaInput {
 	s.ReplicaMode = &v
+	return s
+}
+
+// SetSourceDBClusterIdentifier sets the SourceDBClusterIdentifier field's value.
+func (s *CreateDBInstanceReadReplicaInput) SetSourceDBClusterIdentifier(v string) *CreateDBInstanceReadReplicaInput {
+	s.SourceDBClusterIdentifier = &v
 	return s
 }
 
@@ -24229,7 +24249,8 @@ type CreateGlobalClusterInput struct {
 	// The engine version of the Aurora global database.
 	EngineVersion *string `type:"string"`
 
-	// The cluster identifier of the new global database cluster.
+	// The cluster identifier of the new global database cluster. This parameter
+	// is stored as a lowercase string.
 	GlobalClusterIdentifier *string `type:"string"`
 
 	// The Amazon Resource Name (ARN) to use as the primary cluster of the global
@@ -26872,6 +26893,10 @@ type DBInstance struct {
 	// DB instance.
 	ReadReplicaDBInstanceIdentifiers []*string `locationNameList:"ReadReplicaDBInstanceIdentifier" type:"list"`
 
+	// Contains the identifier of the source DB cluster if this DB instance is a
+	// read replica.
+	ReadReplicaSourceDBClusterIdentifier *string `type:"string"`
+
 	// Contains the identifier of the source DB instance if this DB instance is
 	// a read replica.
 	ReadReplicaSourceDBInstanceIdentifier *string `type:"string"`
@@ -27348,6 +27373,12 @@ func (s *DBInstance) SetReadReplicaDBClusterIdentifiers(v []*string) *DBInstance
 // SetReadReplicaDBInstanceIdentifiers sets the ReadReplicaDBInstanceIdentifiers field's value.
 func (s *DBInstance) SetReadReplicaDBInstanceIdentifiers(v []*string) *DBInstance {
 	s.ReadReplicaDBInstanceIdentifiers = v
+	return s
+}
+
+// SetReadReplicaSourceDBClusterIdentifier sets the ReadReplicaSourceDBClusterIdentifier field's value.
+func (s *DBInstance) SetReadReplicaSourceDBClusterIdentifier(v string) *DBInstance {
+	s.ReadReplicaSourceDBClusterIdentifier = &v
 	return s
 }
 
@@ -29373,7 +29404,8 @@ func (s *DeleteBlueGreenDeploymentOutput) SetBlueGreenDeployment(v *BlueGreenDep
 type DeleteCustomDBEngineVersionInput struct {
 	_ struct{} `type:"structure"`
 
-	// The database engine. The only supported engine is custom-oracle-ee.
+	// The database engine. The only supported engines are custom-oracle-ee and
+	// custom-oracle-ee-cdb.
 	//
 	// Engine is a required field
 	Engine *string `min:"1" type:"string" required:"true"`
@@ -32555,6 +32587,10 @@ type DescribeDBClustersInput struct {
 	//    Resource Names (ARNs). The results list only includes information about
 	//    the DB clusters identified by these ARNs.
 	//
+	//    * db-cluster-resource-id - Accepts DB cluster resource identifiers. The
+	//    results list will only include information about the DB clusters identified
+	//    by these DB cluster resource identifiers.
+	//
 	//    * domain - Accepts Active Directory directory IDs. The results list only
 	//    includes information about the DB clusters associated with these domains.
 	//
@@ -32708,8 +32744,6 @@ type DescribeDBEngineVersionsInput struct {
 	// The database engine to return.
 	//
 	// Valid Values:
-	//
-	//    * aurora (for MySQL 5.6-compatible Aurora)
 	//
 	//    * aurora-mysql (for MySQL 5.7-compatible and MySQL 8.0-compatible Aurora)
 	//
@@ -36378,8 +36412,6 @@ type DescribeOrderableDBInstanceOptionsInput struct {
 	//
 	// Valid Values:
 	//
-	//    * aurora (for MySQL 5.6-compatible Aurora)
-	//
 	//    * aurora-mysql (for MySQL 5.7-compatible and MySQL 8.0-compatible Aurora)
 	//
 	//    * aurora-postgresql
@@ -38620,8 +38652,7 @@ type GlobalCluster struct {
 	// is the unique key that identifies a global database cluster.
 	GlobalClusterIdentifier *string `type:"string"`
 
-	// The list of cluster IDs for secondary clusters within the global database
-	// cluster. Currently limited to 1 item.
+	// The list of primary and secondary clusters within the global database cluster.
 	GlobalClusterMembers []*GlobalClusterMember `locationNameList:"GlobalClusterMember" type:"list"`
 
 	// The Amazon Web Services Region-unique, immutable identifier for the global
@@ -39422,7 +39453,7 @@ type ModifyCustomDBEngineVersionInput struct {
 	// An optional description of your CEV.
 	Description *string `min:"1" type:"string"`
 
-	// The DB engine. The only supported value is custom-oracle-ee.
+	// The DB engine. The only supported values are custom-oracle-ee and custom-oracle-ee-cdb.
 	//
 	// Engine is a required field
 	Engine *string `min:"1" type:"string" required:"true"`
@@ -40101,12 +40132,10 @@ type ModifyDBClusterInput struct {
 	// is disabled, changes to the DB cluster are applied during the next maintenance
 	// window.
 	//
-	// The ApplyImmediately parameter only affects the EnableIAMDatabaseAuthentication,
-	// MasterUserPassword, and NewDBClusterIdentifier values. If the ApplyImmediately
-	// parameter is disabled, then changes to the EnableIAMDatabaseAuthentication,
-	// MasterUserPassword, and NewDBClusterIdentifier values are applied during
-	// the next maintenance window. All other changes are applied immediately, regardless
-	// of the value of the ApplyImmediately parameter.
+	// Most modifications can be applied immediately or during the next scheduled
+	// maintenance window. Some modifications, such as turning on deletion protection
+	// and changing the master password, are applied immediately—regardless of
+	// when you choose to apply them.
 	//
 	// By default, this parameter is disabled.
 	//
@@ -40302,15 +40331,19 @@ type ModifyDBClusterInput struct {
 	// this parameter results in an outage. The change is applied during the next
 	// maintenance window unless ApplyImmediately is enabled.
 	//
+	// If the cluster that you're modifying has one or more read replicas, all replicas
+	// must be running an engine version that's the same or later than the version
+	// you specify.
+	//
+	// To list all of the available engine versions for Aurora MySQL version 2 (5.7-compatible)
+	// and version 3 (MySQL 8.0-compatible), use the following command:
+	//
+	// aws rds describe-db-engine-versions --engine aurora-mysql --query "DBEngineVersions[].EngineVersion"
+	//
 	// To list all of the available engine versions for MySQL 5.6-compatible Aurora,
 	// use the following command:
 	//
 	// aws rds describe-db-engine-versions --engine aurora --query "DBEngineVersions[].EngineVersion"
-	//
-	// To list all of the available engine versions for MySQL 5.7-compatible and
-	// MySQL 8.0-compatible Aurora, use the following command:
-	//
-	// aws rds describe-db-engine-versions --engine aurora-mysql --query "DBEngineVersions[].EngineVersion"
 	//
 	// To list all of the available engine versions for Aurora PostgreSQL, use the
 	// following command:
@@ -41474,6 +41507,10 @@ type ModifyDBInstanceInput struct {
 	// If you specify only a major version, Amazon RDS will update the DB instance
 	// to the default minor version if the current minor version is lower. For information
 	// about valid engine versions, see CreateDBInstance, or call DescribeDBEngineVersions.
+	//
+	// If the instance that you're modifying is acting as a read replica, the engine
+	// version that you specify must be the same or later than the version that
+	// the source DB instance or cluster is running.
 	//
 	// In RDS Custom for Oracle, this parameter is supported for read replicas only
 	// if they are in the PATCH_DB_FAILURE lifecycle.
@@ -47052,10 +47089,6 @@ type RestoreDBClusterFromS3Input struct {
 	//
 	// Possible values are audit, error, general, and slowquery.
 	//
-	// Aurora PostgreSQL
-	//
-	// Possible value is postgresql.
-	//
 	// For more information about exporting CloudWatch Logs for Amazon Aurora, see
 	// Publishing Database Logs to Amazon CloudWatch Logs (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/USER_LogAccess.html#USER_LogAccess.Procedural.UploadtoCloudWatch)
 	// in the Amazon Aurora User Guide.
@@ -47071,27 +47104,22 @@ type RestoreDBClusterFromS3Input struct {
 
 	// The name of the database engine to be used for this DB cluster.
 	//
-	// Valid Values: aurora (for MySQL 5.6-compatible Aurora) and aurora-mysql (for
-	// MySQL 5.7-compatible and MySQL 8.0-compatible Aurora)
+	// Valid Values: aurora-mysql (for MySQL 5.7-compatible and MySQL 8.0-compatible
+	// Aurora)
 	//
 	// Engine is a required field
 	Engine *string `type:"string" required:"true"`
 
 	// The version number of the database engine to use.
 	//
-	// To list all of the available engine versions for aurora (for MySQL 5.6-compatible
-	// Aurora), use the following command:
-	//
-	// aws rds describe-db-engine-versions --engine aurora --query "DBEngineVersions[].EngineVersion"
-	//
-	// To list all of the available engine versions for aurora-mysql (for MySQL
-	// 5.7-compatible and MySQL 8.0-compatible Aurora), use the following command:
+	// To list all of the available engine versions for aurora-mysql (MySQL 5.7-compatible
+	// and MySQL 8.0-compatible Aurora), use the following command:
 	//
 	// aws rds describe-db-engine-versions --engine aurora-mysql --query "DBEngineVersions[].EngineVersion"
 	//
 	// Aurora MySQL
 	//
-	// Example: 5.6.10a, 5.6.mysql_aurora.1.19.2, 5.7.mysql_aurora.2.07.1, 8.0.mysql_aurora.3.02.0
+	// Examples: 5.7.mysql_aurora.2.07.1, 8.0.mysql_aurora.3.02.0
 	EngineVersion *string `type:"string"`
 
 	// The Amazon Web Services KMS key identifier for an encrypted DB cluster.
@@ -47763,12 +47791,9 @@ type RestoreDBClusterFromSnapshotInput struct {
 	// Valid for: Aurora DB clusters only
 	EngineMode *string `type:"string"`
 
-	// The version of the database engine to use for the new DB cluster.
-	//
-	// To list all of the available engine versions for MySQL 5.6-compatible Aurora,
-	// use the following command:
-	//
-	// aws rds describe-db-engine-versions --engine aurora --query "DBEngineVersions[].EngineVersion"
+	// The version of the database engine to use for the new DB cluster. If you
+	// don't specify an engine version, the default version for the database engine
+	// in the Amazon Web Services Region is used.
 	//
 	// To list all of the available engine versions for MySQL 5.7-compatible and
 	// MySQL 8.0-compatible Aurora, use the following command:
@@ -47792,7 +47817,7 @@ type RestoreDBClusterFromSnapshotInput struct {
 	//
 	// Aurora MySQL
 	//
-	// See MySQL on Amazon RDS Versions (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Updates.html)
+	// See Database engine updates for Amazon Aurora MySQL (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Updates.html)
 	// in the Amazon Aurora User Guide.
 	//
 	// Aurora PostgreSQL
@@ -47802,7 +47827,7 @@ type RestoreDBClusterFromSnapshotInput struct {
 	//
 	// MySQL
 	//
-	// See MySQL on Amazon RDS Versions (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_MySQL.html#MySQL.Concepts.VersionMgmt)
+	// See Amazon RDS for MySQL (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_MySQL.html#MySQL.Concepts.VersionMgmt)
 	// in the Amazon RDS User Guide.
 	//
 	// PostgreSQL
@@ -52024,6 +52049,28 @@ type StartExportTaskInput struct {
 	// The name of the IAM role to use for writing to the Amazon S3 bucket when
 	// exporting a snapshot or cluster.
 	//
+	// In the IAM policy attached to your IAM role, include the following required
+	// actions to allow the transfer of files from Amazon RDS or Amazon Aurora to
+	// an S3 bucket:
+	//
+	//    * s3:PutObject*
+	//
+	//    * s3:GetObject*
+	//
+	//    * s3:ListBucket
+	//
+	//    * s3:DeleteObject*
+	//
+	//    * s3:GetBucketLocation
+	//
+	// In the policy, include the resources to identify the S3 bucket and objects
+	// in the bucket. The following list of resources shows the Amazon Resource
+	// Name (ARN) format for accessing S3:
+	//
+	//    * arn:aws:s3:::your-s3-bucket
+	//
+	//    * arn:aws:s3:::your-s3-bucket/*
+	//
 	// IamRoleArn is a required field
 	IamRoleArn *string `type:"string" required:"true"`
 
@@ -52566,7 +52613,7 @@ type StopDBInstanceAutomatedBackupsReplicationInput struct {
 	_ struct{} `type:"structure"`
 
 	// The Amazon Resource Name (ARN) of the source DB instance for which to stop
-	// replicating automated backups, for example, arn:aws:rds:us-west-2:123456789012:db:mydatabase.
+	// replicating automate backups, for example, arn:aws:rds:us-west-2:123456789012:db:mydatabase.
 	//
 	// SourceDBInstanceArn is a required field
 	SourceDBInstanceArn *string `type:"string" required:"true"`
@@ -52924,16 +52971,19 @@ type SwitchoverDetail struct {
 	//
 	// Values:
 	//
-	//    * preparing-for-switchover - The resource is being prepared to switch
-	//    over.
+	//    * PROVISIONING - The resource is being prepared to switch over.
 	//
-	//    * ready-for-switchover - The resource is ready to switch over.
+	//    * AVAILABLE - The resource is ready to switch over.
 	//
-	//    * switchover-in-progress - The resource is being switched over.
+	//    * SWITCHOVER_IN_PROGRESS - The resource is being switched over.
 	//
-	//    * switchover-completed - The resource has been switched over.
+	//    * SWITCHOVER_COMPLETED - The resource has been switched over.
 	//
-	//    * switchover-failed - The resource attempted to switch over but failed.
+	//    * SWITCHOVER_FAILED - The resource attempted to switch over but failed.
+	//
+	//    * MISSING_SOURCE - The source resource has been deleted.
+	//
+	//    * MISSING_TARGET - The target resource has been deleted.
 	Status *string `type:"string"`
 
 	// The Amazon Resource Name (ARN) of a resource in the green environment.
