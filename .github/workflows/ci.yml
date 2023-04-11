@@ -38,3 +38,6 @@ jobs:
         run: make testcoverfile
       - name: upload coverage reports to codecov
         uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.txt

@@ -80,7 +80,9 @@ func (resp Response) ApplyIdempotentRetry(t *testing.T, r Retry) *testerror.Erro
 		if exitCode != 0 {
 			t.Logf("terraform not idempotent attempt %d/%d: waiting %s", attempt, r.Max, r.Wait)
 			err = errors.New("terraform configuration not idempotent")
-			time.Sleep(r.Wait)
+			if attempt < r.Max {
+				time.Sleep(r.Wait)
+			}
 		}
 		return attempt < r.Max, err
 	})
@@ -110,7 +112,9 @@ func (resp Response) DestroyRetry(t *testing.T, r Retry) *testerror.Error {
 		_, err := terraform.DestroyE(t, resp.Options)
 		if err != nil {
 			t.Logf("terraform destroy failed attempt %d/%d: waiting %s", attempt, r.Max, r.Wait)
-			time.Sleep(r.Wait)
+			if attempt < r.Max {
+				time.Sleep(r.Wait)
+			}
 		}
 		return attempt < r.Max, err
 	})
