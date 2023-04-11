@@ -26,9 +26,6 @@ func TestApplyIdempotent(t *testing.T) {
 	test.Destroy(t).ErrorIsNil(t)
 }
 
-// TestApplyRetryIdempotentFail is a test that will retry the apply if it fails.
-// We simulate this with a resource that has a property using `timestamp()` which
-// will always be different on every plan.
 func TestApplyIdempotentRetryFail(t *testing.T) {
 	t.Parallel()
 
@@ -43,4 +40,51 @@ func TestApplyIdempotentRetryFail(t *testing.T) {
 	err = test.ApplyIdempotentRetry(t, rty).AsError()
 	assert.Truef(t, time.Since(tb) >= 20*time.Second, "retry should have waited at least 20 second")
 	assert.ErrorContains(t, err, "terraform configuration not idempotent")
+}
+
+func TestApplyFail(t *testing.T) {
+	t.Parallel()
+
+	test, err := Dirs("testdata/applyfail", "").WithVars(nil).InitPlanShow(t)
+	require.NoError(t, err)
+	defer test.Destroy(t) //nolint:errcheck
+	err = test.Apply(t).AsError()
+	assert.ErrorContains(t, err, "test error")
+}
+
+func TestApplyIdempotentApplyFail(t *testing.T) {
+	t.Parallel()
+
+	test, err := Dirs("testdata/applyfail", "").WithVars(nil).InitPlanShow(t)
+	require.NoError(t, err)
+	defer test.Destroy(t) //nolint:errcheck
+	err = test.ApplyIdempotent(t).AsError()
+	assert.ErrorContains(t, err, "test error")
+}
+
+func TestApplyIdempotentRetryApplyFail(t *testing.T) {
+	t.Parallel()
+
+	rty := Retry{
+		Max:  2,
+		Wait: time.Second * 10,
+	}
+	test, err := Dirs("testdata/applyfail", "").WithVars(nil).InitPlanShow(t)
+	require.NoError(t, err)
+	defer test.Destroy(t) //nolint:errcheck
+	err = test.ApplyIdempotentRetry(t, rty).AsError()
+	assert.ErrorContains(t, err, "test error")
+}
+
+func TestDestroyRetry(t *testing.T) {
+	t.Parallel()
+
+	rty := Retry{
+		Max:  2,
+		Wait: time.Second * 10,
+	}
+	test, err := Dirs("testdata/depth1", "").WithVars(nil).InitPlanShow(t)
+	require.NoError(t, err)
+	test.ApplyIdempotent(t).ErrorIsNil(t)
+	test.DestroyRetry(t, rty).ErrorIsNil(t)
 }
