@@ -20,12 +20,17 @@ resource "local_file" "test_int" {
 
 resource "local_file" "test_simple_json" {
   content  = local.jsondata_simple
-  filename = "test_json.txt"
+  filename = "test_simple.json"
 }
 
 resource "local_file" "test_array_json" {
   content  = local.jsondata_array
-  filename = "test_json.txt"
+  filename = "test_array.json"
+}
+
+resource "local_file" "test_empty_json" {
+  content  = ""
+  filename = "test_empty.json"
 }
 
 locals {
