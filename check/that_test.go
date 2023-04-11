@@ -2,6 +2,7 @@ package check
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"testing"
@@ -18,6 +19,15 @@ const (
 func Bool(b bool) *bool {
 	var b2 = b
 	return &b2
+}
+
+func TestHasValueInvalidArgs(t *testing.T) {
+	t.Parallel()
+
+	tftest, err := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
+	require.NoError(t, err)
+	defer tftest.Cleanup()
+	InPlan(tftest.Plan).That("local_file.test").Key("content").HasValue(func() {}).ErrorContains(t, "invalid operation")
 }
 
 func TestHasValueStrings(t *testing.T) {
@@ -146,6 +156,66 @@ func TestJsonArrayAssertionFunc(t *testing.T) {
 	require.NoError(t, err)
 	defer tftest.Cleanup()
 	InPlan(tftest.Plan).That("local_file.test_array_json").Key("content").ContainsJsonValue(JsonAssertionFunc(f)).ErrorIsNil(t)
+}
+
+func TestJsonEmpty(t *testing.T) {
+	t.Parallel()
+
+	f := JsonAssertionFunc(
+		func(input json.RawMessage) (*bool, error) {
+			return Bool(false), nil
+		},
+	)
+
+	tftest, err := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
+	require.NoError(t, err)
+	defer tftest.Cleanup()
+	InPlan(tftest.Plan).That("local_file.test_empty_json").Key("content").ContainsJsonValue(f).ErrorContains(t, "key content was empty")
+}
+
+func TestJsonAssertionFuncError(t *testing.T) {
+	t.Parallel()
+
+	f := JsonAssertionFunc(
+		func(input json.RawMessage) (*bool, error) {
+			return Bool(false), errors.New("test error")
+		},
+	)
+
+	tftest, err := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
+	require.NoError(t, err)
+	defer tftest.Cleanup()
+	InPlan(tftest.Plan).That("local_file.test_simple_json").Key("content").ContainsJsonValue(f).ErrorContains(t, "test error")
+}
+
+func TestJsonAssertionFuncFalse(t *testing.T) {
+	t.Parallel()
+
+	f := JsonAssertionFunc(
+		func(input json.RawMessage) (*bool, error) {
+			return Bool(false), nil
+		},
+	)
+
+	tftest, err := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
+	require.NoError(t, err)
+	defer tftest.Cleanup()
+	InPlan(tftest.Plan).That("local_file.test_simple_json").Key("content").ContainsJsonValue(f).ErrorContains(t, "assertion failed for \"content\"")
+}
+
+func TestJsonAssertionFuncNil(t *testing.T) {
+	t.Parallel()
+
+	f := JsonAssertionFunc(
+		func(input json.RawMessage) (*bool, error) {
+			return nil, nil
+		},
+	)
+
+	tftest, err := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
+	require.NoError(t, err)
+	defer tftest.Cleanup()
+	InPlan(tftest.Plan).That("local_file.test_simple_json").Key("content").ContainsJsonValue(f).ErrorContains(t, "assertion failed for \"content\"")
 }
 
 func TestJsonSimpleAssertionFunc(t *testing.T) {

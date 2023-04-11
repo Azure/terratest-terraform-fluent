@@ -16,9 +16,10 @@ type ThatType struct {
 	ResourceName string
 }
 
+// JsonAssertionFunc is a function which can be used to unmarshal a raw JSON message and check its contents.
 type JsonAssertionFunc func(input json.RawMessage) (*bool, error)
 
-// That returns a type which can be used for more fluent assertions for a given Resource
+// That returns a type which can be used for more fluent assertions for a given resource.
 func (p PlanType) That(resourceName string) ThatType {
 	return ThatType{
 		Plan:         p.Plan,
@@ -26,7 +27,7 @@ func (p PlanType) That(resourceName string) ThatType {
 	}
 }
 
-// Exists returns an error if the resource does not exist in the plan
+// Exists returns an *testError.Error if the resource does not exist in the plan
 func (t ThatType) Exists() *testerror.Error {
 	if _, ok := t.Plan.ResourcePlannedValuesMap[t.ResourceName]; !ok {
 		return testerror.Newf(
@@ -37,7 +38,7 @@ func (t ThatType) Exists() *testerror.Error {
 	return nil
 }
 
-// DoesNotExist returns an error if the resource exists in the plan
+// DoesNotExist returns an *testerror.Error if the resource exists in the plan
 func (t ThatType) DoesNotExist() *testerror.Error {
 	if _, exists := t.Plan.ResourcePlannedValuesMap[t.ResourceName]; exists {
 		return testerror.Newf(
@@ -64,7 +65,7 @@ type ThatTypeWithKey struct {
 	Key          string
 }
 
-// HasValue returns a CheckError if the resource does not exist in the plan or if the value of the key does not match the
+// HasValue returns a *testerror.Error if the resource does not exist in the plan or if the value of the key does not match the
 // expected value
 func (twk ThatTypeWithKey) HasValue(expected interface{}) *testerror.Error {
 	if err := twk.Exists(); err != nil {
@@ -95,7 +96,7 @@ func (twk ThatTypeWithKey) HasValue(expected interface{}) *testerror.Error {
 }
 
 // ContainsJsonValue returns a *testerror.Error which asserts upon a given JSON string set into
-// the State by deserializing it and then asserting on it via the JsonAssertionFunc
+// the State by deserializing it and then asserting on it via the JsonAssertionFunc.
 func (twk ThatTypeWithKey) ContainsJsonValue(assertion JsonAssertionFunc) *testerror.Error {
 	if err := twk.Exists(); err != nil {
 		return err
