@@ -1,4 +1,5 @@
 # terratest-terraform-fluent
+
 [![codecov](https://codecov.io/gh/Azure/terratest-terraform-fluent/branch/main/graph/badge.svg?token=oBG1qFc8S6)](https://codecov.io/gh/Azure/terratest-terraform-fluent)
 
 Terratest extension package for testing Terraform code with fluent assertions.
@@ -13,24 +14,24 @@ import (
 
   "github.com/Azure/terratest-terraform-fluent/check"
   "github.com/Azure/terratest-terraform-fluent/setuptest"
-  "github.com/stretchr/testify/assert"
   "github.com/stretchr/testify/require"
 )
 
-const(
-  basicTestData = "testdata/basic"
+const (
+  moduleDir = "../"
 )
 
-func TestSomeTerraform( t *testing.T) {
+func TestSomeTerraform(t *testing.T) {
   // Set up the Terraform test and run terraform init, plan and show,
   // saving the plan output to a struct.
-  // The returned struct in tftest contains the plan struct, and the clean up func.
+  // The returned struct in tftest contains the temp dir, the plan struct,
+  // the terraform options, and the clean up func.
   //
   // The Dirs inputs are the test root directory and the relative path to the test code.
-  // (this must be a subdirectory of the test root directory)
+  // (this must be a subdirectory of the test root directory).
   // The WithVars inputs are the Terraform variables to pass to the test.
-  // The InitAndPlanAndShowWithStruct input is the testing.T pointer.
-  tftest, err := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
+  // The InitAndPlanShow input is the testing.T pointer.
+  tftest, err := setuptest.Dirs(moduleDir, "").WithVars(nil).InitPlanShow(t)
   require.NoError(t, err)
   defer tftest.Cleanup()
 
