@@ -30,7 +30,7 @@ func TestSomeTerraform(t *testing.T) {
   // The Dirs inputs are the test root directory and the relative path to the test code.
   // (this must be a subdirectory of the test root directory).
   // The WithVars inputs are the Terraform variables to pass to the test.
-  // The InitAndPlanShow input is the testing.T pointer.
+  // The InitPlanShow input is the testing.T pointer.
   tftest, err := setuptest.Dirs(moduleDir, "").WithVars(nil).InitPlanShow(t)
   require.NoError(t, err)
   defer tftest.Cleanup()
