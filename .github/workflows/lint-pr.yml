@@ -26,6 +26,7 @@ jobs:
           # Configure which types are allowed.
           # Default: https://github.com/commitizen/conventional-commit-types
           types: |
+            build
             chore
             ci
             docs
@@ -33,10 +34,12 @@ jobs:
             fix
             refactor
             revert
+            perf
             style
             test
           # Configure which scopes are allowed.
           scopes: |
+            deps
             check
             error
             setuptest
@@ -62,8 +65,7 @@ jobs:
           # Multiple labels can be separated by newlines.
           # If you want to rerun the validation when labels change, you might want
           # to use the `labeled` and `unlabeled` event triggers in your workflow.
-          ignoreLabels: |
-            dependencies
+          ## ignoreLabels:
           # If you're using a format for the PR title that differs from the traditional Conventional
           # Commits spec, you can use these options to customize the parsing of the type, scope and
           # subject. The `headerPattern` should contain a regex where the capturing groups in parentheses
