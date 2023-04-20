@@ -59,3 +59,39 @@ func TestQueryNil(t *testing.T) {
 		InPlan(tftest.Plan).That("terraform_data.invalid_json").Key("input").Query(".").HasValue(nil).AsError(),
 	)
 }
+
+func TestQueryInvalidArgs(t *testing.T) {
+	t.Parallel()
+
+	tftest, err := setuptest.Dirs(queryTestData, "").WithVars(nil).InitPlanShow(t)
+	require.NoError(t, err)
+	defer tftest.Cleanup()
+
+	InPlan(tftest.Plan).That("terraform_data.invalid_json").Key("input").Query(".").HasValue(func() {}).ErrorContains(t, "invalid operation")
+}
+
+func TestQueryNotEqual(t *testing.T) {
+	t.Parallel()
+
+	tftest, err := setuptest.Dirs(queryTestData, "").WithVars(nil).InitPlanShow(t)
+	require.NoError(t, err)
+	defer tftest.Cleanup()
+	assert.ErrorContains(
+		t,
+		InPlan(tftest.Plan).That("terraform_data.invalid_json").Key("input").Query(".").HasValue(123).AsError(),
+		"query result <nil>, for key input not equal to assertion 123",
+	)
+}
+
+func TestQueryNotExists(t *testing.T) {
+	t.Parallel()
+
+	tftest, err := setuptest.Dirs(queryTestData, "").WithVars(nil).InitPlanShow(t)
+	require.NoError(t, err)
+	defer tftest.Cleanup()
+	assert.ErrorContains(
+		t,
+		InPlan(tftest.Plan).That("terraform_data.invalid_json").Key("not_exists").Query(".").HasValue(123).AsError(),
+		"key not_exists not found in resource",
+	)
+}

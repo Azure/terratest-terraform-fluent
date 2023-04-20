@@ -22,6 +22,17 @@ type ThatTypeWithKeyQuery struct {
 // and tests the result against the provided value.
 // https://github.com/tidwall/gjson
 func (twkq ThatTypeWithKeyQuery) HasValue(expected interface{}) *testerror.Error {
+
+	err := ThatTypeWithKey{
+		Plan:         twkq.Plan,
+		ResourceName: twkq.ResourceName,
+		Key:          twkq.Key,
+	}.Exists()
+
+	if err != nil {
+		return err
+	}
+
 	resource := twkq.Plan.ResourcePlannedValuesMap[twkq.ResourceName]
 	actual := resource.AttributeValues[twkq.Key]
 	bytes, _ := json.Marshal(actual)
@@ -37,7 +48,7 @@ func (twkq ThatTypeWithKeyQuery) HasValue(expected interface{}) *testerror.Error
 
 	if !assert.ObjectsAreEqualValues(result.Value(), expected) {
 		return testerror.Newf(
-			"%s: query result %s, for key %s not equal to assertion %s",
+			"%s: query result %v, for key %s not equal to assertion %v",
 			twkq.ResourceName,
 			result.Value(),
 			twkq.Key,
