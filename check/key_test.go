@@ -106,14 +106,14 @@ func TestJsonArrayAssertionFunc(t *testing.T) {
 	t.Parallel()
 
 	f := func(input json.RawMessage) (*bool, error) {
-		i := make([]interface{}, 0, 1)
+		i := make([]any, 0, 1)
 		if err := json.Unmarshal(input, &i); err != nil {
 			return nil, fmt.Errorf("JSON input is not an array")
 		}
 		if len(i) == 0 {
 			return nil, fmt.Errorf("JSON input is empty")
 		}
-		if i[0].(map[string]interface{})["test"] != "test" {
+		if i[0].(map[string]any)["test"] != "test" {
 			return nil, fmt.Errorf("JSON input key name is not equal to test")
 		}
 
@@ -191,7 +191,7 @@ func TestJsonSimpleAssertionFunc(t *testing.T) {
 
 	f := JsonAssertionFunc(
 		func(input json.RawMessage) (*bool, error) {
-			i := make(map[string]interface{})
+			i := make(map[string]any)
 			if err := json.Unmarshal(input, &i); err != nil {
 				return nil, fmt.Errorf("JSON input is not an map")
 			}

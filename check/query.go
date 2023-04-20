@@ -21,7 +21,7 @@ type ThatTypeWithKeyQuery struct {
 // HasValue executes the provided gjson query on the resource and key combination
 // and tests the result against the provided value.
 // https://github.com/tidwall/gjson
-func (twkq ThatTypeWithKeyQuery) HasValue(expected interface{}) *testerror.Error {
+func (twkq ThatTypeWithKeyQuery) HasValue(expected any) *testerror.Error {
 
 	err := ThatTypeWithKey{
 		Plan:         twkq.Plan,
