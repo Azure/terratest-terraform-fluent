@@ -31,6 +31,8 @@ type Response struct {
 // The test directory is the directory containing the test code,
 // it should either be blank to test the code in the root,
 // or a relative path beneath the root directory.
+//
+// Before a Terraform command is run, the code in the root directory will be copied to a temporary directory.
 func Dirs(rootdir, testdir string) DirType {
 	return DirType{
 		RootDir: rootdir,
