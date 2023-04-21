@@ -25,7 +25,7 @@ func getDefaultTerraformOptions(t *testing.T, dir string) *terraform.Options {
 		Lock:         true,
 		NoColor:      true,
 
-		Vars: make(map[string]interface{}),
+		Vars: make(map[string]any),
 	}
 	return terraform.WithDefaultRetryableErrors(t, &o)
 }

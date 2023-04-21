@@ -22,7 +22,7 @@ type ThatTypeWithKey struct {
 
 // HasValue returns a *testerror.Error if the resource does not exist in the plan or if the value of the key does not match the
 // expected value
-func (twk ThatTypeWithKey) HasValue(expected interface{}) *testerror.Error {
+func (twk ThatTypeWithKey) HasValue(expected any) *testerror.Error {
 	if err := twk.Exists(); err != nil {
 		return err
 	}
@@ -135,7 +135,7 @@ func (twk ThatTypeWithKey) Query(q string) ThatTypeWithKeyQuery {
 
 // validateEqualArgs checks whether provided arguments can be safely used in the
 // HasValue function.
-func validateEqualArgs(expected, actual interface{}) error {
+func validateEqualArgs(expected, actual any) error {
 	if expected == nil && actual == nil {
 		return nil
 	}
@@ -146,7 +146,7 @@ func validateEqualArgs(expected, actual interface{}) error {
 	return nil
 }
 
-func isFunction(arg interface{}) bool {
+func isFunction(arg any) bool {
 	if arg == nil {
 		return false
 	}

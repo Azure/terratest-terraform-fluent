@@ -13,13 +13,13 @@ import (
 func TestDirs(t *testing.T) {
 	t.Parallel()
 
-	_, err := Dirs("testdata/depth1", "").WithVars(map[string]interface{}{}).InitPlanShow(t)
+	_, err := Dirs("testdata/depth1", "").WithVars(map[string]any{}).InitPlanShow(t)
 	require.NoError(t, err)
 }
 
 func TestDirsWithVars(t *testing.T) {
 	t.Parallel()
-	vars := map[string]interface{}{
+	vars := map[string]any{
 		"test": "testing",
 	}
 	tftest, err := Dirs("testdata/with-vars", "").WithVars(vars).InitPlanShow(t)
@@ -64,7 +64,7 @@ func TestDirsWithFunc(t *testing.T) {
 		return f.Close()
 	}
 
-	test, err := Dirs("testdata/depth1", "").WithVars(map[string]interface{}{}).InitPlanShowWithPrepFunc(t, f)
+	test, err := Dirs("testdata/depth1", "").WithVars(map[string]any{}).InitPlanShowWithPrepFunc(t, f)
 	require.NoError(t, err)
 	require.FileExists(t, filepath.Join(test.TmpDir, "test.txt"))
 }
@@ -108,6 +108,6 @@ func TestDirsWithFuncErr(t *testing.T) {
 		return errors.New("test error")
 	}
 
-	_, err := Dirs("testdata/depth1", "").WithVars(map[string]interface{}{}).InitPlanShowWithPrepFunc(t, f)
+	_, err := Dirs("testdata/depth1", "").WithVars(map[string]any{}).InitPlanShowWithPrepFunc(t, f)
 	require.ErrorContains(t, err, "test error")
 }

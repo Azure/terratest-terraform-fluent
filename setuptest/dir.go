@@ -46,9 +46,9 @@ type DirType struct {
 	TestDir string
 }
 
-// WithVars allows you to add variables in the form of `map[string]interface{}`.
+// WithVars allows you to add variables in the form of `map[string]any`.
 // It returns a type which can be used for more fluent setup of a test with variables.
-func (d DirType) WithVars(vars map[string]interface{}) DirTypeWithVars {
+func (d DirType) WithVars(vars map[string]any) DirTypeWithVars {
 	return DirTypeWithVars{
 		RootDir: d.RootDir,
 		TestDir: d.TestDir,
@@ -69,7 +69,7 @@ func (d DirType) WithVarFiles(varfiles []string) DirTypeWithVarFiles {
 type DirTypeWithVars struct {
 	RootDir string
 	TestDir string
-	Vars    map[string]interface{}
+	Vars    map[string]any
 }
 
 // DirTypeWithVarFiles is a type which can be used for more fluent setup of a test with variable files

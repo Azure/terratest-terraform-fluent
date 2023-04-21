@@ -41,6 +41,13 @@ func TestSomeTerraform(t *testing.T) {
   // Check that the plan contains the expected resource, with an attribute called `my_attribute` and
   // a corresponding value of `my_value`.
   check.InPlan(tftest.Plan).That("my_terraform_resource.name").Key("my_attribute").HasValue("my_value").ErrorIsNil(t)
+
+  // Check that the plan contains the expected resource, with an attribute called `my_complex_attribute` and
+  // a gjson query in a list called `mylist`, taking the first element, which is an object with a property
+  // called `property`, with a value of `my_value`.
+  //
+  // https://github.com/tidwall/gjson/blob/master/SYNTAX.md
+  check.InPlan(tftest.Plan).That("my_terraform_resource.name").Key("my_complex_attribute").Query("mylist.0.property").HasValue("my_value").ErrorIsNil(t)
   defer tftest.Destroy(t)
   tftest.ApplyIdempotent(t).ErrorIsNil(t)
 }
