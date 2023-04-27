@@ -3,7 +3,7 @@ module github.com/Azure/terratest-terraform-fluent
 go 1.19
 
 require (
-	github.com/gruntwork-io/terratest v0.41.18
+	github.com/gruntwork-io/terratest v0.41.19
 	github.com/stretchr/testify v1.8.2
 	github.com/tidwall/gjson v1.14.4
 	gopkg.in/matryer/try.v1 v1.0.0-20150601225556-312d2599e12e
