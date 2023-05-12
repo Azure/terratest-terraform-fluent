@@ -322,7 +322,7 @@ func TestContainsStringKeyNotExists(t *testing.T) {
 	twk.Plan.ResourcePlannedValuesMap = map[string]*tfjson.StateResource{
 		"test_resource": {
 			AttributeValues: map[string]interface{}{
-				"test_key": interface{}(nil),
+				"test_key": "this is a test string",
 			},
 		},
 	}
