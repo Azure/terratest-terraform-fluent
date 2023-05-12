@@ -9,6 +9,8 @@ import (
 
 	"github.com/Azure/terratest-terraform-fluent/setuptest"
 	"github.com/Azure/terratest-terraform-fluent/to"
+	"github.com/gruntwork-io/terratest/modules/terraform"
+	tfjson "github.com/hashicorp/terraform-json"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -251,4 +253,33 @@ func TestIsFunctionNot(t *testing.T) {
 	assert.False(t, isFunction(i))
 	var s *string
 	assert.False(t, isFunction(s))
+}
+
+func TestContainsString(t *testing.T) {
+	t.Parallel()
+
+	// Create a mock ThatTypeWithKey object
+	twk := ThatTypeWithKey{
+		Plan:         &terraform.PlanStruct{},
+		ResourceName: "test_resource",
+		Key:          "test_key",
+	}
+
+	// Set the planned value for the key
+	twk.Plan.ResourcePlannedValuesMap = map[string]*tfjson.StateResource{
+		"test_resource": {
+			AttributeValues: map[string]interface{}{
+				"test_key": "this is a test string",
+			},
+		},
+	}
+
+	// Test that the function returns nil when the expected string is contained in the actual string
+	err := twk.ContainsString("test")
+	assert.Nil(t, err.AsError())
+
+	// Test that the function returns an error when the expected string is not contained in the actual string
+	err = twk.ContainsString("not in string")
+	assert.NotNil(t, err.AsError())
+	assert.Contains(t, err.Error(), "does not contain assertion")
 }

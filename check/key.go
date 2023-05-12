@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"strings"
 
 	"github.com/Azure/terratest-terraform-fluent/testerror"
 	"github.com/gruntwork-io/terratest/modules/terraform"
@@ -47,6 +48,34 @@ func (twk ThatTypeWithKey) HasValue(expected any) *testerror.Error {
 			expected,
 		)
 	}
+	return nil
+}
+
+// ContainsString returns a *testerror.Error if the resource does not exist in the plan or if the value of the key does not contain the
+// expected string
+func (twk ThatTypeWithKey) ContainsString(expected string) *testerror.Error {
+	if err := twk.Exists(); err != nil {
+		return err
+	}
+
+	resource := twk.Plan.ResourcePlannedValuesMap[twk.ResourceName]
+	actual := resource.AttributeValues[twk.Key]
+
+	actualString, ok := actual.(string)
+	if !ok {
+		return testerror.Newf("Cannot convert value to string: %s.%s", twk.ResourceName, twk.Key)
+	}
+
+	if !strings.Contains(actualString, expected) {
+		return testerror.Newf(
+			"%s: attribute %s, planned value %s does not contain assertion %s",
+			twk.ResourceName,
+			twk.Key,
+			actual,
+			expected,
+		)
+	}
+
 	return nil
 }
 
