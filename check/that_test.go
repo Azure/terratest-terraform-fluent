@@ -8,10 +8,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const (
-	basicTestData = "testdata/basic"
-)
-
 func TestResourceExists(t *testing.T) {
 	t.Parallel()
 
