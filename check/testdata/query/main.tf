@@ -26,7 +26,3 @@ resource "terraform_data" "test_nested_map" {
     }),
   })
 }
-
-resource "terraform_data" "invalid_json" {
-  input = null
-}

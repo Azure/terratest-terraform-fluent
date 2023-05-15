@@ -33,9 +33,29 @@ func (twkq ThatTypeWithKeyQuery) HasValue(expected any) *testerror.Error {
 		return err
 	}
 
+	var bytes []byte
+
 	resource := twkq.Plan.ResourcePlannedValuesMap[twkq.ResourceName]
 	actual := resource.AttributeValues[twkq.Key]
-	bytes, _ := json.Marshal(actual)
+
+	// If the actual value is a string, we assume it is JSON and try to parse it.
+	// Otherwise, we marshal it to JSON and try to parse it.
+	actualS, ok := actual.(string)
+	if !ok {
+		bytes, _ = json.Marshal(actual)
+	} else {
+		bytes = []byte(actualS)
+	}
+
+	if !gjson.ValidBytes(bytes) {
+		return testerror.Newf(
+			"%s: attribute %s, planned value %s not valid JSON",
+			twkq.ResourceName,
+			twkq.Key,
+			actual,
+		)
+	}
+
 	result := gjson.GetBytes(bytes, twkq.Query)
 
 	if err := validateEqualArgs(expected, result.Value()); err != nil {

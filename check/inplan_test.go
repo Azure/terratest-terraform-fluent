@@ -3,24 +3,31 @@ package check
 import (
 	"testing"
 
-	"github.com/Azure/terratest-terraform-fluent/setuptest"
-	"github.com/stretchr/testify/require"
+	"github.com/gruntwork-io/terratest/modules/terraform"
+	tfjson "github.com/hashicorp/terraform-json"
 )
 
 func TestNumberOfResourcesInPlan(t *testing.T) {
 	t.Parallel()
 
-	tftest, err := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
-	require.NoError(t, err)
-	defer tftest.Cleanup()
-	InPlan(tftest.Plan).NumberOfResourcesEquals(5).ErrorIsNil(t)
+	pt := mockPlanType()
+	pt.NumberOfResourcesEquals(2).ErrorIsNil(t)
 }
 
 func TestNumberOfResourcesInPlanWithError(t *testing.T) {
 	t.Parallel()
 
-	tftest, err := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
-	require.NoError(t, err)
-	defer tftest.Cleanup()
-	InPlan(tftest.Plan).NumberOfResourcesEquals(1).ErrorContains(t, "expected 1 resources, got")
+	pt := mockPlanType()
+	pt.NumberOfResourcesEquals(1).ErrorContains(t, "expected 1 resources, got")
+}
+
+func mockPlanType() PlanType {
+	return PlanType{
+		Plan: &terraform.PlanStruct{
+			ResourcePlannedValuesMap: map[string]*tfjson.StateResource{
+				"test_resource":  {},
+				"test_resource2": {},
+			},
+		},
+	}
 }

@@ -18,74 +18,67 @@ import (
 func TestHasValueInvalidArgs(t *testing.T) {
 	t.Parallel()
 
-	tftest, err := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
-	require.NoError(t, err)
-	defer tftest.Cleanup()
-	InPlan(tftest.Plan).That("local_file.test").Key("content").HasValue(func() {}).ErrorContains(t, "invalid operation")
+	// Create a mock ThatTypeWithKey object
+	twk := mockThatTypeWithKey(any(nil))
+	err := twk.HasValue(func() {})
+	assert.ErrorContains(t, err, "invalid operation")
 }
 
 func TestHasValueStrings(t *testing.T) {
 	t.Parallel()
 
-	tftest, err := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
-	require.NoError(t, err)
-	defer tftest.Cleanup()
-	InPlan(tftest.Plan).That("local_file.test").Key("content").HasValue("test").ErrorIsNil(t)
+	// Create a mock ThatTypeWithKey object
+	twk := mockThatTypeWithKey("test")
+	err := twk.HasValue("test")
+	assert.NoError(t, err.AsError())
 }
 
 func TestHasValueStringsNotEqualError(t *testing.T) {
 	t.Parallel()
 
-	tftest, err := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
-	require.NoError(t, err)
-	defer tftest.Cleanup()
-	assert.ErrorContains(
-		t,
-		InPlan(tftest.Plan).That("local_file.test").Key("content").HasValue("throwError"),
-		"attribute content, planned value test not equal to assertion throwError",
-	)
+	// Create a mock ThatTypeWithKey object
+	twk := mockThatTypeWithKey("test")
+	err := twk.HasValue("not_equal")
+	assert.ErrorContains(t, err, "attribute test_key, planned value test not equal to assertion not_equal")
 }
 
 func TestHasValueStringsToInt(t *testing.T) {
 	t.Parallel()
 
-	tftest, err := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
-	require.NoError(t, err)
-	defer tftest.Cleanup()
-	assert.Error(
-		t,
-		InPlan(tftest.Plan).That("local_file.test_int").Key("content").HasValue(123).AsError(),
-	)
+	// Create a mock ThatTypeWithKey object
+	twk := mockThatTypeWithKey("123")
+	err := twk.HasValue(123)
+	assert.Error(t, err.AsError())
 }
 
 func TestKeyNotExistsError(t *testing.T) {
 	t.Parallel()
 
-	tftest, _ := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
-	defer tftest.Cleanup()
-	assert.ErrorContains(
-		t,
-		InPlan(tftest.Plan).That("local_file.test").Key("not_exists").Exists(),
-		"key not_exists not found in resource",
-	)
+	// Create a mock ThatTypeWithKey object
+	twk := mockThatTypeWithKey(any(nil))
+	twk.Key = "not_exists"
+	err := twk.Exists()
+	assert.ErrorContains(t, err, "key not_exists not found in resource")
+
 }
 
 func TestKeyNotExists(t *testing.T) {
 	t.Parallel()
 
-	tftest, err := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
-	defer tftest.Cleanup()
-	require.NoError(t, err)
-	InPlan(tftest.Plan).That("local_file.test").Key("not_exists").DoesNotExist().ErrorIsNil(t)
+	// Create a mock ThatTypeWithKey object
+	twk := mockThatTypeWithKey(any(nil))
+	twk.Key = "not_exists"
+	err := twk.DoesNotExist()
+	assert.NoError(t, err.AsError())
 }
 
 func TestKeyNotExistsFail(t *testing.T) {
 	t.Parallel()
 
-	tftest, err := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
-	defer tftest.Cleanup()
-	require.NoError(t, err)
-	require.Errorf(t, InPlan(tftest.Plan).That("local_file.test").Key("content").DoesNotExist(), "key content not found in resource when it should be")
+	// Create a mock ThatTypeWithKey object
+	twk := mockThatTypeWithKey(any(nil))
+	err := twk.DoesNotExist()
+	assert.ErrorContains(t, err, "key test_key found in resource")
 }
 
 func TestInSubdir(t *testing.T) {
@@ -122,10 +115,10 @@ func TestJsonArrayAssertionFunc(t *testing.T) {
 		return to.Ptr(true), nil
 	}
 
-	tftest, err := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
-	require.NoError(t, err)
-	defer tftest.Cleanup()
-	InPlan(tftest.Plan).That("local_file.test_array_json").Key("content").ContainsJsonValue(JsonAssertionFunc(f)).ErrorIsNil(t)
+	// Create a mock ThatTypeWithKey object
+	twk := mockThatTypeWithKey("[{\"test\":\"test\"}]")
+	err := twk.ContainsJsonValue(JsonAssertionFunc(f))
+	require.NoError(t, err.AsError())
 }
 
 func TestJsonEmpty(t *testing.T) {
@@ -137,10 +130,9 @@ func TestJsonEmpty(t *testing.T) {
 		},
 	)
 
-	tftest, err := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
-	require.NoError(t, err)
-	defer tftest.Cleanup()
-	InPlan(tftest.Plan).That("local_file.test_empty_json").Key("content").ContainsJsonValue(f).ErrorContains(t, "key content was empty")
+	// Create a mock ThatTypeWithKey object
+	twk := mockThatTypeWithKey("")
+	twk.ContainsJsonValue(f).ErrorContains(t, "key test_key was empty")
 }
 
 func TestJsonAssertionFuncError(t *testing.T) {
@@ -152,10 +144,9 @@ func TestJsonAssertionFuncError(t *testing.T) {
 		},
 	)
 
-	tftest, err := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
-	require.NoError(t, err)
-	defer tftest.Cleanup()
-	InPlan(tftest.Plan).That("local_file.test_simple_json").Key("content").ContainsJsonValue(f).ErrorContains(t, "test error")
+	// Create a mock ThatTypeWithKey object
+	twk := mockThatTypeWithKey("{\"test\": \"test\"}")
+	twk.ContainsJsonValue(f).ErrorContains(t, "test error")
 }
 
 func TestJsonAssertionFuncFalse(t *testing.T) {
@@ -167,10 +158,9 @@ func TestJsonAssertionFuncFalse(t *testing.T) {
 		},
 	)
 
-	tftest, err := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
-	require.NoError(t, err)
-	defer tftest.Cleanup()
-	InPlan(tftest.Plan).That("local_file.test_simple_json").Key("content").ContainsJsonValue(f).ErrorContains(t, "assertion failed for \"content\"")
+	// Create a mock ThatTypeWithKey object
+	twk := mockThatTypeWithKey("{\"test\": \"test\"}")
+	twk.ContainsJsonValue(f).ErrorContains(t, "assertion failed for \"test_key\"")
 }
 
 func TestJsonAssertionFuncNil(t *testing.T) {
@@ -182,10 +172,10 @@ func TestJsonAssertionFuncNil(t *testing.T) {
 		},
 	)
 
-	tftest, err := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
-	require.NoError(t, err)
-	defer tftest.Cleanup()
-	InPlan(tftest.Plan).That("local_file.test_simple_json").Key("content").ContainsJsonValue(f).ErrorContains(t, "assertion failed for \"content\"")
+	// Create a mock ThatTypeWithKey object
+	twk := mockThatTypeWithKey("{\"test\": \"test\"}")
+	err := twk.ContainsJsonValue(f)
+	require.ErrorContains(t, err, "assertion failed for \"test_key\"")
 }
 
 func TestJsonSimpleAssertionFunc(t *testing.T) {
@@ -207,29 +197,29 @@ func TestJsonSimpleAssertionFunc(t *testing.T) {
 		},
 	)
 
-	tftest, err := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
-	require.NoError(t, err)
-	defer tftest.Cleanup()
-	InPlan(tftest.Plan).That("local_file.test_simple_json").Key("content").ContainsJsonValue(f).ErrorIsNil(t)
+	// Create a mock ThatTypeWithKey object
+	twk := mockThatTypeWithKey("{\"test\": \"test\"}")
+	twk.ContainsJsonValue(f).ErrorIsNil(t)
 }
 
 func TestKeyDoesNotExist(t *testing.T) {
 	t.Parallel()
 
-	tftest, err := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
-	require.NoError(t, err)
-	defer tftest.Cleanup()
-	InPlan(tftest.Plan).That("local_file.test").Key("not_exist").DoesNotExist().ErrorIsNil(t)
+	// Create a mock ThatTypeWithKey object
+	twk := mockThatTypeWithKey(any(nil))
+	twk.Key = "not_exist"
+	err := twk.DoesNotExist()
+	require.NoError(t, err.AsError())
 }
 
 func TestKeyDoesNotExistFail(t *testing.T) {
 	t.Parallel()
 
-	tftest, err := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
-	require.NoError(t, err)
-	defer tftest.Cleanup()
-	err = InPlan(tftest.Plan).That("local_file.test").Key("content").DoesNotExist()
-	require.ErrorContains(t, err, "local_file.test: key content found in resource")
+	// Create a mock ThatTypeWithKey object
+	twk := mockThatTypeWithKey(any(nil))
+
+	err := twk.DoesNotExist()
+	require.ErrorContains(t, err, "test_resource: key test_key found in resource")
 }
 
 func TestValidateEqualArgs(t *testing.T) {
@@ -259,20 +249,7 @@ func TestContainsString(t *testing.T) {
 	t.Parallel()
 
 	// Create a mock ThatTypeWithKey object
-	twk := ThatTypeWithKey{
-		Plan:         &terraform.PlanStruct{},
-		ResourceName: "test_resource",
-		Key:          "test_key",
-	}
-
-	// Set the planned value for the key
-	twk.Plan.ResourcePlannedValuesMap = map[string]*tfjson.StateResource{
-		"test_resource": {
-			AttributeValues: map[string]interface{}{
-				"test_key": "this is a test string",
-			},
-		},
-	}
+	twk := mockThatTypeWithKey("test")
 
 	// Test that the function returns nil when the expected string is contained in the actual string
 	err := twk.ContainsString("test")
@@ -288,20 +265,7 @@ func TestContainsStringNotAString(t *testing.T) {
 	t.Parallel()
 
 	// Create a mock ThatTypeWithKey object
-	twk := ThatTypeWithKey{
-		Plan:         &terraform.PlanStruct{},
-		ResourceName: "test_resource",
-		Key:          "test_key",
-	}
-
-	// Set the planned value for the key
-	twk.Plan.ResourcePlannedValuesMap = map[string]*tfjson.StateResource{
-		"test_resource": {
-			AttributeValues: map[string]interface{}{
-				"test_key": interface{}(nil),
-			},
-		},
-	}
+	twk := mockThatTypeWithKey(any(nil))
 
 	// Test that the function returns expected error if string conversion is not possible
 	err := twk.ContainsString("test")
@@ -312,22 +276,26 @@ func TestContainsStringKeyNotExists(t *testing.T) {
 	t.Parallel()
 
 	// Create a mock ThatTypeWithKey object
-	twk := ThatTypeWithKey{
-		Plan:         &terraform.PlanStruct{},
-		ResourceName: "test_resource",
-		Key:          "not_exists",
-	}
-
-	// Set the planned value for the key
-	twk.Plan.ResourcePlannedValuesMap = map[string]*tfjson.StateResource{
-		"test_resource": {
-			AttributeValues: map[string]interface{}{
-				"test_key": "this is a test string",
-			},
-		},
-	}
+	twk := mockThatTypeWithKey("this is a test string")
+	twk.Key = "not_exists"
 
 	// Test that the function returns expected error if string conversion is not possible
 	err := twk.ContainsString("test")
 	assert.ErrorContains(t, err, "key not_exists not found in resource")
+}
+
+func mockThatTypeWithKey(val any) ThatTypeWithKey {
+	return ThatTypeWithKey{
+		Plan: &terraform.PlanStruct{
+			ResourcePlannedValuesMap: map[string]*tfjson.StateResource{
+				"test_resource": {
+					AttributeValues: map[string]any{
+						"test_key": val,
+					},
+				},
+			},
+		},
+		ResourceName: "test_resource",
+		Key:          "test_key",
+	}
 }

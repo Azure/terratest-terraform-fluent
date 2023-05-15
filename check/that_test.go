@@ -3,54 +3,54 @@ package check
 import (
 	"testing"
 
-	"github.com/Azure/terratest-terraform-fluent/setuptest"
+	"github.com/gruntwork-io/terratest/modules/terraform"
+	tfjson "github.com/hashicorp/terraform-json"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-)
-
-const (
-	basicTestData = "testdata/basic"
 )
 
 func TestResourceExists(t *testing.T) {
 	t.Parallel()
 
-	tftest, _ := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
-	defer tftest.Cleanup()
-	assert.NoErrorf(
-		t,
-		InPlan(tftest.Plan).That("local_file.test").Exists().AsError(),
-		"resource local_file.test not found in plan",
-	)
+	tt := mockThatType()
+	err := tt.Exists().AsError()
+	assert.NoError(t, err)
 }
 
 func TestResourceExistsFail(t *testing.T) {
 	t.Parallel()
 
-	tftest, _ := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
-	defer tftest.Cleanup()
-	assert.Errorf(
-		t,
-		InPlan(tftest.Plan).That("not_exists").Exists(),
-		"resource not_exists found in plan",
-	)
+	tt := mockThatType()
+	tt.ResourceName = "not_exists"
+	err := tt.Exists().AsError()
+	assert.Error(t, err)
 }
 
 func TestResourceDoesNotExist(t *testing.T) {
 	t.Parallel()
 
-	tftest, err := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
-	require.NoError(t, err)
-	defer tftest.Cleanup()
-	InPlan(tftest.Plan).That("not_exist").DoesNotExist().ErrorIsNil(t)
+	tt := mockThatType()
+	tt.ResourceName = "not_exists"
+	err := tt.DoesNotExist().AsError()
+	assert.NoError(t, err)
 }
 
 func TestResourceDoesNotExistFail(t *testing.T) {
 	t.Parallel()
 
-	tftest, err := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
-	require.NoError(t, err)
-	defer tftest.Cleanup()
-	err = InPlan(tftest.Plan).That("local_file.test").DoesNotExist()
-	require.ErrorContains(t, err, "local_file.test: resource found in plan")
+	tt := mockThatType()
+	err := tt.DoesNotExist().AsError()
+	assert.ErrorContains(t, err, "test_resource: resource found in plan")
+}
+
+func mockThatType() ThatType {
+	return ThatType{
+		Plan: &terraform.PlanStruct{
+			ResourcePlannedValuesMap: map[string]*tfjson.StateResource{
+				"test_resource": {
+					AttributeValues: map[string]interface{}{},
+				},
+			},
+		},
+		ResourceName: "test_resource",
+	}
 }
