@@ -94,6 +94,14 @@ func TestQueryEscapedJson(t *testing.T) {
 	assert.NoError(t, err.AsError())
 }
 
+func TestQueryInvalidJson(t *testing.T) {
+	t.Parallel()
+	val := "invalid json"
+	twkq := mockThatTypeWithKeyQuery(val, ".")
+	err := twkq.HasValue(nil).AsError()
+	assert.ErrorContains(t, err, "planned value invalid json not valid JSON")
+}
+
 func mockThatTypeWithKeyQuery(val any, query string) ThatTypeWithKeyQuery {
 	return ThatTypeWithKeyQuery{
 		Plan: &terraform.PlanStruct{
