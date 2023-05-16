@@ -45,15 +45,17 @@ func TestResourceDoesNotExistFail(t *testing.T) {
 func TestKey(t *testing.T) {
 	t.Parallel()
 
-	tt := mockThatType()
-
 	t.Run("Success", func(t *testing.T) {
+		t.Parallel()
+		tt := mockThatType()
 		o := tt.Key("key")
 		assert.Equal(t, "value", o.Actual)
 		assert.True(t, o.Exist)
 	})
 
 	t.Run("ResourceNotFound", func(t *testing.T) {
+		t.Parallel()
+		tt := mockThatType()
 		tt.ResourceName = "not_exists"
 		o := tt.Key("key")
 		assert.Nil(t, o.Actual)
@@ -61,6 +63,8 @@ func TestKey(t *testing.T) {
 	})
 
 	t.Run("KeyNotFound", func(t *testing.T) {
+		t.Parallel()
+		tt := mockThatType()
 		o := tt.Key("not_exists")
 		assert.Nil(t, o.Actual)
 		assert.False(t, o.Exist)
