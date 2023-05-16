@@ -25,3 +25,13 @@ func (p PlanType) NumberOfResourcesEquals(expected int) *testerror.Error {
 	}
 	return nil
 }
+
+// That returns a ThatType which can be used for more fluent assertions for a given resource.
+func (p PlanType) That(resourceName string) ThatType {
+	t := ThatType{
+		Plan:         p.Plan,
+		ResourceName: resourceName,
+	}
+	t.exists()
+	return t
+}
