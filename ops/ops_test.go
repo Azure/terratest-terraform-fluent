@@ -89,6 +89,21 @@ func TestQuery(t *testing.T) {
 func TestContainsJsonValue(t *testing.T) {
 	t.Parallel()
 
+	t.Run("NotFound", func(t *testing.T) {
+		t.Parallel()
+		mock := mockOperativeType(any(nil))
+		mock.Exist = false
+		err := mock.ContainsJsonValue(JsonAssertionFunc(func(input json.RawMessage) (*bool, error) { return to.Ptr(true), nil })).AsError()
+		assert.ErrorContains(t, err, "not found when expected")
+	})
+
+	t.Run("NotAString", func(t *testing.T) {
+		t.Parallel()
+		mock := mockOperativeType(func() {})
+		err := mock.ContainsJsonValue(JsonAssertionFunc(func(input json.RawMessage) (*bool, error) { return to.Ptr(true), nil })).AsError()
+		assert.ErrorContains(t, err, "value is not a string")
+	})
+
 	t.Run("SuccessArray", func(t *testing.T) {
 		t.Parallel()
 		f := func(input json.RawMessage) (*bool, error) {
