@@ -56,14 +56,10 @@ func getDefaultTerraformOptions(t *testing.T, dir string) *terraform.Options {
 // The depth input is used to determine how many directories to go up to make sure we
 // fully clean up.
 func CopyTerraformFolderToTempAndCleanUp(t *testing.T, moduleDir string, testDir string) (string, func() error, error) {
-	//var resp Response
-	//resp.t = t
 	tmp := test_structure.CopyTerraformFolderToTemp(t, moduleDir, testDir)
 	// We normalise, then work out the depth of the test directory relative
 	// to the test so we know how many/ directories to go up to get to the root.
 	// We can then delete the right directory when cleaning up.
-	//resp.TmpDir = tmp
-
 	absTestPath := filepath.Join(moduleDir, testDir)
 	relPath, err := filepath.Rel(moduleDir, absTestPath)
 	if err != nil {

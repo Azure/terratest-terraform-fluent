@@ -39,7 +39,7 @@ func NewStreamLogger(stream io.ReadWriter) *StreamLogger {
 
 func (s *StreamLogger) Logf(t testing.TestingT, format string, args ...interface{}) {
 	// Sprintf removed as we don't want the prefixes to the log lines
-	//log := fmt.Sprintf(format, args...)
+	// log := fmt.Sprintf(format, args...)
 	doLog(t, s.stream, args...)
 	s.logCount++
 	if s.outputProgress && s.logCount%50 == 0 {
@@ -66,7 +66,7 @@ func (s *StreamLogger) Close() error {
 
 // doLog logs the given arguments to the given writer, along with a prefix of the test name.
 func doLog(t testing.TestingT, writer io.Writer, args ...interface{}) {
-	//date := time.Now()
+	// date := time.Now()
 	prefix := fmt.Sprintf("%s:", t.Name())
 	allArgs := append([]interface{}{prefix}, args...)
 	fmt.Fprintln(writer, allArgs...)
