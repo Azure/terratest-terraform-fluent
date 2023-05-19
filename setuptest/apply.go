@@ -2,7 +2,8 @@ package setuptest
 
 import (
 	"errors"
-	"testing"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/Azure/terratest-terraform-fluent/testerror"
@@ -38,9 +39,22 @@ var SlowRetry = Retry{
 }
 
 // Apply runs terraform apply for the given Response and returns the error.
-func (resp Response) Apply(t *testing.T) *testerror.Error {
+func (resp Response) Apply() *testerror.Error {
+	// If there's no plan file, then we need to run apply without a plan.
+	if _, err := os.Stat(filepath.Join(resp.Options.TerraformDir, resp.Options.PlanFilePath)); err != nil {
+		if !os.IsNotExist(err) {
+			return testerror.New(err.Error())
+		}
+		opts := resp.Options
+		opts.PlanFilePath = ""
+		_, err = terraform.ApplyE(resp.t, opts)
+		if err != nil {
+			return testerror.New(err.Error())
+		}
+		return nil
+	}
 
-	_, err := terraform.ApplyE(t, resp.Options)
+	_, err := terraform.ApplyE(resp.t, resp.Options)
 	if err != nil {
 		return testerror.New(err.Error())
 	}
@@ -49,8 +63,8 @@ func (resp Response) Apply(t *testing.T) *testerror.Error {
 
 // Apply runs terraform apply, then plan for the given Response and checks for any changes,
 // it then returns the error.
-func (resp Response) ApplyIdempotent(t *testing.T) *testerror.Error {
-	_, err := terraform.ApplyAndIdempotentE(t, resp.Options)
+func (resp Response) ApplyIdempotent() *testerror.Error {
+	_, err := terraform.ApplyAndIdempotentE(resp.t, resp.Options)
 	if err != nil {
 		return testerror.New(err.Error())
 	}
@@ -60,8 +74,8 @@ func (resp Response) ApplyIdempotent(t *testing.T) *testerror.Error {
 // Apply runs terraform apply, then performs a retry loop with a plan.
 // If the configuration is not idempotent, it will retry up to the specified number of times.
 // It then returns the error.
-func (resp Response) ApplyIdempotentRetry(t *testing.T, r Retry) *testerror.Error {
-	_, err := terraform.ApplyE(t, resp.Options)
+func (resp Response) ApplyIdempotentRetry(r Retry) *testerror.Error {
+	_, err := terraform.ApplyE(resp.t, resp.Options)
 
 	if err != nil {
 		return testerror.New(err.Error())
@@ -70,20 +84,20 @@ func (resp Response) ApplyIdempotentRetry(t *testing.T, r Retry) *testerror.Erro
 	if try.MaxRetries < r.Max {
 		try.MaxRetries = r.Max
 	}
-
 	err = try.Do(func(attempt int) (bool, error) {
-		exitCode, err := terraform.PlanExitCodeE(t, resp.Options)
+		exitCode, err := terraform.PlanExitCodeE(resp.t, resp.Options)
 		if err != nil {
-			t.Logf("terraform plan failed attempt %d/%d: waiting %s", attempt, r.Max, r.Wait)
+			resp.t.Logf("terraform plan failed attempt %d/%d: waiting %s", attempt, r.Max, r.Wait)
 			time.Sleep(r.Wait)
 		}
-		if exitCode != 0 {
-			t.Logf("terraform not idempotent attempt %d/%d: waiting %s", attempt, r.Max, r.Wait)
+		if exitCode == 2 {
+			resp.t.Logf("terraform not idempotent attempt %d/%d: waiting %s", attempt, r.Max, r.Wait)
 			err = errors.New("terraform configuration not idempotent")
 			if attempt < r.Max {
 				time.Sleep(r.Wait)
 			}
 		}
+
 		return attempt < r.Max, err
 	})
 

@@ -14,8 +14,8 @@ func TestApply(t *testing.T) {
 	test, err := Dirs("testdata/depth1", "").WithVars(nil).InitPlanShow(t)
 	defer test.Cleanup()
 	require.NoError(t, err)
-	test.Apply(t).ErrorIsNil(t)
-	test.Destroy(t).ErrorIsNil(t)
+	test.Apply().ErrorIsNil(t)
+	test.Destroy().ErrorIsNil(t)
 }
 
 func TestApplyIdempotent(t *testing.T) {
@@ -24,8 +24,8 @@ func TestApplyIdempotent(t *testing.T) {
 	test, err := Dirs("testdata/depth1", "").WithVars(nil).InitPlanShow(t)
 	defer test.Cleanup()
 	require.NoError(t, err)
-	test.ApplyIdempotent(t).ErrorIsNil(t)
-	test.Destroy(t).ErrorIsNil(t)
+	test.ApplyIdempotent().ErrorIsNil(t)
+	test.Destroy().ErrorIsNil(t)
 }
 
 func TestApplyIdempotentRetryFail(t *testing.T) {
@@ -39,7 +39,7 @@ func TestApplyIdempotentRetryFail(t *testing.T) {
 	defer test.Cleanup()
 	require.NoError(t, err)
 	tb := time.Now()
-	err = test.ApplyIdempotentRetry(t, rty).AsError()
+	err = test.ApplyIdempotentRetry(rty).AsError()
 	assert.Truef(t, time.Since(tb) >= 10*time.Second, "retry should have waited at least 10 second")
 	assert.ErrorContains(t, err, "terraform configuration not idempotent")
 }
@@ -50,7 +50,7 @@ func TestApplyFail(t *testing.T) {
 	test, err := Dirs("testdata/applyfail", "").WithVars(nil).InitPlanShow(t)
 	defer test.Cleanup()
 	require.NoError(t, err)
-	err = test.Apply(t).AsError()
+	err = test.Apply().AsError()
 	assert.ErrorContains(t, err, "test error")
 }
 
@@ -60,7 +60,7 @@ func TestApplyIdempotentApplyFail(t *testing.T) {
 	test, err := Dirs("testdata/applyfail", "").WithVars(nil).InitPlanShow(t)
 	defer test.Cleanup()
 	require.NoError(t, err)
-	err = test.ApplyIdempotent(t).AsError()
+	err = test.ApplyIdempotent().AsError()
 	assert.ErrorContains(t, err, "test error")
 }
 
@@ -74,6 +74,6 @@ func TestApplyIdempotentRetryApplyFail(t *testing.T) {
 	test, err := Dirs("testdata/applyfail", "").WithVars(nil).InitPlanShow(t)
 	defer test.Cleanup()
 	require.NoError(t, err)
-	err = test.ApplyIdempotentRetry(t, rty).AsError()
+	err = test.ApplyIdempotentRetry(rty).AsError()
 	assert.ErrorContains(t, err, "test error")
 }

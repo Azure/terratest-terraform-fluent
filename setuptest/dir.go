@@ -21,11 +21,11 @@ type PrepFunc func(Response) error
 //
 // It is returned by the Init* funcs and can be used by the check package.
 type Response struct {
-	TmpDir  string
-	Plan    *terraform.PlanStruct
-	Options *terraform.Options
-	Cleanup func()
-	t       *testing.T
+	TmpDir     string
+	PlanStruct *terraform.PlanStruct
+	Options    *terraform.Options
+	Cleanup    func()
+	t          *testing.T
 }
 
 // Dirs func begins the fluent test setup process.

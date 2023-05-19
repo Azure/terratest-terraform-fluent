@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/gruntwork-io/terratest v0.41.24
 	github.com/hashicorp/terraform-json v0.16.0
+	github.com/prashantv/gostub v1.1.0
 	github.com/stretchr/testify v1.8.2
 	github.com/tidwall/gjson v1.14.4
 	gopkg.in/matryer/try.v1 v1.0.0-20150601225556-312d2599e12e
@@ -67,7 +68,6 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/pquerna/otp v1.4.0 // indirect
-	github.com/prashantv/gostub v1.1.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/tidwall/match v1.1.1 // indirect

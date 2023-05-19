@@ -19,7 +19,7 @@ func (dtv DirTypeWithVars) InitPlanShow(t *testing.T) (Response, error) {
 		return resp, err
 	}
 	resp.Options.Vars = dtv.Vars
-	resp.Plan, err = terraform.InitAndPlanAndShowWithStructE(t, resp.Options)
+	resp.PlanStruct, err = terraform.InitAndPlanAndShowWithStructE(t, resp.Options)
 	return resp, err
 }
 
@@ -39,7 +39,7 @@ func (dtv DirTypeWithVars) InitPlanShowWithPrepFunc(t *testing.T, f PrepFunc) (R
 		return resp, err
 	}
 	resp.Options.Vars = dtv.Vars
-	resp.Plan, err = terraform.InitAndPlanAndShowWithStructE(t, resp.Options)
+	resp.PlanStruct, err = terraform.InitAndPlanAndShowWithStructE(t, resp.Options)
 	return resp, err
 }
 
@@ -57,7 +57,7 @@ func (dtvf DirTypeWithVarFiles) InitPlanShow(t *testing.T) (Response, error) {
 	}
 	resp.Options.VarFiles = dtvf.VarFiles
 	plan, err := terraform.InitAndPlanAndShowWithStructE(t, resp.Options)
-	resp.Plan = plan
+	resp.PlanStruct = plan
 	return resp, err
 }
 
@@ -81,6 +81,6 @@ func (dtvf DirTypeWithVarFiles) InitPlanShowWithPrepFunc(t *testing.T, f PrepFun
 	// Run terraform
 	resp.Options.VarFiles = dtvf.VarFiles
 	plan, err := terraform.InitAndPlanAndShowWithStructE(t, resp.Options)
-	resp.Plan = plan
+	resp.PlanStruct = plan
 	return resp, err
 }

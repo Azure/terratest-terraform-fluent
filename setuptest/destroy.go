@@ -1,7 +1,6 @@
 package setuptest
 
 import (
-	"testing"
 	"time"
 
 	"github.com/Azure/terratest-terraform-fluent/testerror"
@@ -10,8 +9,8 @@ import (
 )
 
 // Destroy runs terraform destroy for the given Response and returns the error.
-func (resp Response) Destroy(t *testing.T) *testerror.Error {
-	_, err := terraform.DestroyE(t, resp.Options)
+func (resp Response) Destroy() *testerror.Error {
+	_, err := terraform.DestroyE(resp.t, resp.Options)
 	if err != nil {
 		return testerror.New(err.Error())
 	}
@@ -19,14 +18,14 @@ func (resp Response) Destroy(t *testing.T) *testerror.Error {
 }
 
 // DestroyWithRetry will retry the terraform destroy command up to the specified number of times.
-func (resp Response) DestroyRetry(t *testing.T, r Retry) *testerror.Error {
+func (resp Response) DestroyRetry(r Retry) *testerror.Error {
 	if try.MaxRetries < r.Max {
 		try.MaxRetries = r.Max
 	}
 	err := try.Do(func(attempt int) (bool, error) {
-		_, err := terraform.DestroyE(t, resp.Options)
+		_, err := terraform.DestroyE(resp.t, resp.Options)
 		if err != nil {
-			t.Logf("terraform destroy failed attempt %d/%d: waiting %s", attempt, r.Max, r.Wait)
+			resp.t.Logf("terraform destroy failed attempt %d/%d: waiting %s", attempt, r.Max, r.Wait)
 			if attempt < r.Max {
 				time.Sleep(r.Wait)
 			}
