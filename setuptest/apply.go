@@ -7,11 +7,13 @@ import (
 	"time"
 
 	"github.com/Azure/terratest-terraform-fluent/testerror"
+	"github.com/gruntwork-io/terratest/modules/retry"
 	"github.com/gruntwork-io/terratest/modules/terraform"
-	"gopkg.in/matryer/try.v1"
 )
 
 // Retry is a configuration for retrying a terraform command.
+// Max is the number of times to retry.
+// Wait is the amount of time to wait between each retry.
 type Retry struct {
 	Max  int
 	Wait time.Duration
@@ -32,10 +34,10 @@ var FastRetry = Retry{
 }
 
 // DefaultRetry is the slower retry configuration.
-// It will retry up to 20 times with a 1 minute wait between each attempt.
+// It will retry up to 15 times with a 2 minute wait between each attempt.
 var SlowRetry = Retry{
-	Max:  20,
-	Wait: 1 * time.Minute,
+	Max:  15,
+	Wait: 2 * time.Minute,
 }
 
 // Apply runs terraform apply for the given Response and returns the error.
@@ -81,24 +83,18 @@ func (resp Response) ApplyIdempotentRetry(r Retry) *testerror.Error {
 		return testerror.New(err.Error())
 	}
 
-	if try.MaxRetries < r.Max {
-		try.MaxRetries = r.Max
-	}
-	err = try.Do(func(attempt int) (bool, error) {
+	_, err = retry.DoWithRetryE(resp.t, "terraform plan", r.Max, r.Wait, func() (string, error) {
 		exitCode, err := terraform.PlanExitCodeE(resp.t, resp.Options)
 		if err != nil {
-			resp.t.Logf("terraform plan failed attempt %d/%d: waiting %s", attempt, r.Max, r.Wait)
-			time.Sleep(r.Wait)
+			return "", retry.FatalError{Underlying: err}
+		}
+		if exitCode == 1 {
+			return "", retry.FatalError{Underlying: errors.New("terraform plan exit code 1")}
 		}
 		if exitCode == 2 {
-			resp.t.Logf("terraform not idempotent attempt %d/%d: waiting %s", attempt, r.Max, r.Wait)
-			err = errors.New("terraform configuration not idempotent")
-			if attempt < r.Max {
-				time.Sleep(r.Wait)
-			}
+			return "", errors.New("terraform configuration not idempotent")
 		}
-
-		return attempt < r.Max, err
+		return "", nil
 	})
 
 	if err != nil {

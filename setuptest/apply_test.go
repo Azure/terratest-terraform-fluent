@@ -41,7 +41,7 @@ func TestApplyIdempotentRetryFail(t *testing.T) {
 	tb := time.Now()
 	err = test.ApplyIdempotentRetry(rty).AsError()
 	assert.Truef(t, time.Since(tb) >= 10*time.Second, "retry should have waited at least 10 second")
-	assert.ErrorContains(t, err, "terraform configuration not idempotent")
+	assert.ErrorContains(t, err, "'terraform plan' unsuccessful after 2 retries")
 }
 
 func TestApplyFail(t *testing.T) {

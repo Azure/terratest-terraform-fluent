@@ -45,20 +45,20 @@ func TestDestroyFail(t *testing.T) {
 
 func TestDestroyRetryOnceFail(t *testing.T) {
 	rty := Retry{
-		Max:  1,
-		Wait: time.Second * 10,
+		Max:  0,
+		Wait: time.Second * 1,
 	}
 	test, err := Dirs("testdata/destroyfailretryok", "").WithVars(nil).InitPlanShow(t)
 	defer test.Cleanup()
 	require.NoError(t, err)
 	test.Apply().ErrorIsNil(t)
 	err = test.DestroyRetry(rty).AsError()
-	assert.ErrorContains(t, err, "error while running command: exit status 1")
+	assert.ErrorContains(t, err, "terraform destroy failed after 0 attempts:")
 }
 
 func TestDestroyRetryOnce(t *testing.T) {
 	rty := Retry{
-		Max:  2,
+		Max:  1,
 		Wait: time.Second * 10,
 	}
 	test, err := Dirs("testdata/destroyfailretryok", "").WithVars(nil).InitPlanShow(t)
