@@ -55,6 +55,11 @@ func TestSomeTerraform(t *testing.T) {
   defer tftest.Destroy()
   tftest.ApplyIdempotent().ErrorIsNil(t)
 
+  // Retrieve the value from the plan and check it using an external func.
+  val, err := check.InPlan(tftest.Plan).That("my_terraform_resource.name").Key("my_other_attribute").GetValue()
+  assert.NoError(t, err)
+  assert.NoError(t, myValidationFunc(val))
+
   // Check that the output contains the expected value.
   tftest.Output("my_output").HasValue("my_output_value").ErrorIsNil(t)
 }
