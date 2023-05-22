@@ -58,7 +58,7 @@ func (o Operative) HasValue(expected any) *testerror.Error {
 
 	if !assert.ObjectsAreEqualValues(expected, o.Actual) {
 		return testerror.Newf(
-			"%s: expected value %s not equal to actual %v",
+			"%s: expected value %v not equal to actual %v",
 			o.Reference,
 			expected,
 			o.Actual,
