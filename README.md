@@ -29,6 +29,8 @@ func TestSomeTerraform(t *testing.T) {
   //
   // The Dirs inputs are the test root directory and the relative path to the test code.
   // (this must be a subdirectory of the test root directory).
+  // To test the module in the current directory, use "" for the second input.
+  //
   // The WithVars inputs are the Terraform variables to pass to the test.
   // The InitPlanShow input is the testing.T pointer.
   tftest, err := setuptest.Dirs(moduleDir, "").WithVars(nil).InitPlanShow(t)
@@ -48,7 +50,12 @@ func TestSomeTerraform(t *testing.T) {
   //
   // https://github.com/tidwall/gjson/blob/master/SYNTAX.md
   check.InPlan(tftest.Plan).That("my_terraform_resource.name").Key("my_complex_attribute").Query("mylist.0.property").HasValue("my_value").ErrorIsNil(t)
-  defer tftest.Destroy(t)
-  tftest.ApplyIdempotent(t).ErrorIsNil(t)
+
+  // Ensure that the terraform apply is idempotent.
+  defer tftest.Destroy()
+  tftest.ApplyIdempotent().ErrorIsNil(t)
+
+  // Check that the output contains the expected value.
+  tftest.Output("my_output").HasValue("my_output_value").ErrorIsNil(t)
 }
 ```
