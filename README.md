@@ -14,6 +14,7 @@ import (
 
   "github.com/Azure/terratest-terraform-fluent/check"
   "github.com/Azure/terratest-terraform-fluent/setuptest"
+  "github.com/stretchr/testify/assert"
   "github.com/stretchr/testify/require"
 )
 
@@ -29,10 +30,15 @@ func TestSomeTerraform(t *testing.T) {
   //
   // The Dirs inputs are the test root directory and the relative path to the test code.
   // (this must be a subdirectory of the test root directory).
+  // To test the module in the current directory, use "" for the second input.
+  //
   // The WithVars inputs are the Terraform variables to pass to the test.
   // The InitPlanShow input is the testing.T pointer.
   tftest, err := setuptest.Dirs(moduleDir, "").WithVars(nil).InitPlanShow(t)
   require.NoError(t, err)
+
+  // Defer the cleanup, which will delete the temporary directory and provide coherent logging.
+  // THIS IS VERY IMPORTANT :)
   defer tftest.Cleanup()
 
   // Check that the plan contains the expected number of resources.
@@ -44,11 +50,19 @@ func TestSomeTerraform(t *testing.T) {
 
   // Check that the plan contains the expected resource, with an attribute called `my_complex_attribute` and
   // a gjson query in a list called `mylist`, taking the first element, which is an object with a property
-  // called `property`, with a value of `my_value`.
-  //
-  // https://github.com/tidwall/gjson/blob/master/SYNTAX.md
+  // called `property`, with a value of `my_value`. See: https://github.com/tidwall/gjson/blob/master/SYNTAX.md
   check.InPlan(tftest.Plan).That("my_terraform_resource.name").Key("my_complex_attribute").Query("mylist.0.property").HasValue("my_value").ErrorIsNil(t)
-  defer tftest.Destroy(t)
-  tftest.ApplyIdempotent(t).ErrorIsNil(t)
+
+  // Ensure that the terraform apply is idempotent.
+  defer tftest.Destroy()
+  tftest.ApplyIdempotent().ErrorIsNil(t)
+
+  // Retrieve the value from the plan and check it using an external func.
+  val, err := check.InPlan(tftest.Plan).That("my_terraform_resource.name").Key("my_other_attribute").GetValue()
+  assert.NoError(t, err)
+  assert.NoError(t, myValidationFunc(val))
+
+  // Check that the output contains the expected value.
+  tftest.Output("my_output").HasValue("my_output_value").ErrorIsNil(t)
 }
 ```

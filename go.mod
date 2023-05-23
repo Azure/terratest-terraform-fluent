@@ -5,9 +5,9 @@ go 1.19
 require (
 	github.com/gruntwork-io/terratest v0.41.25
 	github.com/hashicorp/terraform-json v0.16.0
-	github.com/stretchr/testify v1.8.3
+	github.com/prashantv/gostub v1.1.0
+	github.com/stretchr/testify v1.8.2
 	github.com/tidwall/gjson v1.14.4
-	gopkg.in/matryer/try.v1 v1.0.0-20150601225556-312d2599e12e
 )
 
 require (
@@ -21,7 +21,6 @@ require (
 	github.com/aws/aws-sdk-go v1.44.241 // indirect
 	github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d // indirect
 	github.com/boombuler/barcode v1.0.1 // indirect
-	github.com/cheekybits/is v0.0.0-20150225183255-68e9c0620927 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/emicklei/go-restful/v3 v3.10.2 // indirect
@@ -56,7 +55,6 @@ require (
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.16.4 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
-	github.com/matryer/try v0.0.0-20161228173917-9ac251b645a2 // indirect
 	github.com/mattn/go-zglob v0.0.4 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/go-testing-interface v1.14.1 // indirect
