@@ -28,6 +28,16 @@ func TestApplyIdempotent(t *testing.T) {
 	test.Destroy().ErrorIsNil(t)
 }
 
+func TestApplyIdempotentRetry(t *testing.T) {
+	t.Parallel()
+
+	test, err := Dirs("testdata/depth1", "").WithVars(nil).InitPlanShow(t)
+	defer test.Cleanup()
+	require.NoError(t, err)
+	test.ApplyIdempotentRetry(FastRetry).ErrorIsNil(t)
+	test.Destroy().ErrorIsNil(t)
+}
+
 func TestApplyIdempotentRetryFail(t *testing.T) {
 	t.Parallel()
 
