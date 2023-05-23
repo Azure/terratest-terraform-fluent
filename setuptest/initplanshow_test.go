@@ -24,7 +24,7 @@ func TestDirsWithVars(t *testing.T) {
 	}
 	tftest, err := Dirs("testdata/with-vars", "").WithVars(vars).InitPlanShow(t)
 	defer tftest.Cleanup()
-	assert.Equal(t, "testing", tftest.Plan.RawPlan.OutputChanges["test"].After)
+	assert.Equal(t, "testing", tftest.PlanStruct.RawPlan.OutputChanges["test"].After)
 	require.NoError(t, err)
 }
 
@@ -49,7 +49,7 @@ func TestDirsWithVarFilesWithFunc(t *testing.T) {
 	vf := []string{"vars.tfvars"}
 	tftest, err := Dirs("testdata/with-vars", "").WithVarFiles(vf).InitPlanShowWithPrepFunc(t, f)
 	defer tftest.Cleanup()
-	assert.Equal(t, "testing", tftest.Plan.RawPlan.OutputChanges["test"].After)
+	assert.Equal(t, "testing", tftest.PlanStruct.RawPlan.OutputChanges["test"].After)
 	require.NoError(t, err)
 }
 
