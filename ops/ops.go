@@ -173,6 +173,9 @@ func (o Operative) Query(query string) Operative {
 	}
 
 	o.Actual = gjson.GetBytes(bytes, query).Value()
+	if o.Actual == nil {
+		o.Exist = false
+	}
 	return o
 }
 

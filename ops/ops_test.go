@@ -52,8 +52,10 @@ func TestQuery(t *testing.T) {
 			"test_map_key": "test",
 		}
 		mock := mockOperativeType(actual)
-		err := mock.Query("not_exist").HasValue(nil).AsError()
+		o := mock.Query("not_exist")
+		err := o.HasValue("nil").AsError()
 		assert.NoError(t, err)
+		assert.False(t, o.Exist)
 	})
 
 	t.Run("QueryLength", func(t *testing.T) {
