@@ -33,7 +33,7 @@ var FastRetry = Retry{
 	Wait: 20 * time.Second,
 }
 
-// DefaultRetry is the slower retry configuration.
+// SlowRetry is the slower retry configuration.
 // It will retry up to 15 times with a 2 minute wait between each attempt.
 var SlowRetry = Retry{
 	Max:  15,
@@ -41,22 +41,13 @@ var SlowRetry = Retry{
 }
 
 // Apply runs terraform apply for the given Response and returns the error.
+// If the plan file does not exist, it will run terraform apply without a plan file.
 func (resp Response) Apply() *testerror.Error {
-	// If there's no plan file, then we need to run apply without a plan.
-	if _, err := os.Stat(filepath.Join(resp.Options.TerraformDir, resp.Options.PlanFilePath)); err != nil {
-		if !os.IsNotExist(err) {
-			return testerror.New(err.Error())
-		}
-		opts := resp.Options
-		opts.PlanFilePath = ""
-		_, err = terraform.ApplyE(resp.t, opts)
-		if err != nil {
-			return testerror.New(err.Error())
-		}
-		return nil
+	opts, err := checkPlanFileExists(resp.Options)
+	if err != nil {
+		return testerror.New(err.Error())
 	}
-
-	_, err := terraform.ApplyE(resp.t, resp.Options)
+	_, err = terraform.ApplyE(resp.t, opts)
 	if err != nil {
 		return testerror.New(err.Error())
 	}
@@ -65,8 +56,13 @@ func (resp Response) Apply() *testerror.Error {
 
 // Apply runs terraform apply, then plan for the given Response and checks for any changes,
 // it then returns the error.
+// If the plan file does not exist, it will run terraform apply without a plan file.
 func (resp Response) ApplyIdempotent() *testerror.Error {
-	_, err := terraform.ApplyAndIdempotentE(resp.t, resp.Options)
+	opts, err := checkPlanFileExists(resp.Options)
+	if err != nil {
+		return testerror.New(err.Error())
+	}
+	_, err = terraform.ApplyAndIdempotentE(resp.t, opts)
 	if err != nil {
 		return testerror.New(err.Error())
 	}
@@ -76,25 +72,31 @@ func (resp Response) ApplyIdempotent() *testerror.Error {
 // Apply runs terraform apply, then performs a retry loop with a plan.
 // If the configuration is not idempotent, it will retry up to the specified number of times.
 // It then returns the error.
+// If the plan file does not exist, it will run terraform apply without a plan file.
 func (resp Response) ApplyIdempotentRetry(r Retry) *testerror.Error {
-	_, err := terraform.ApplyE(resp.t, resp.Options)
+	opts, err := checkPlanFileExists(resp.Options)
+	if err != nil {
+		return testerror.New(err.Error())
+	}
 
+	_, err = terraform.ApplyE(resp.t, opts)
 	if err != nil {
 		return testerror.New(err.Error())
 	}
 
 	_, err = retry.DoWithRetryE(resp.t, "terraform plan", r.Max, r.Wait, func() (string, error) {
-		exitCode, err := terraform.PlanExitCodeE(resp.t, resp.Options)
+		exitCode, err := terraform.PlanExitCodeE(resp.t, opts)
 		if err != nil {
 			return "", retry.FatalError{Underlying: err}
 		}
-		if exitCode == 1 {
-			return "", retry.FatalError{Underlying: errors.New("terraform plan exit code 1")}
-		}
-		if exitCode == 2 {
+		switch exitCode {
+		case 0:
+			return "", nil
+		case 2:
 			return "", errors.New("terraform configuration not idempotent")
+		default:
+			return "", retry.FatalError{Underlying: errors.New("terraform plan exit code 1 or other error")}
 		}
-		return "", nil
 	})
 
 	if err != nil {
@@ -102,4 +104,20 @@ func (resp Response) ApplyIdempotentRetry(r Retry) *testerror.Error {
 	}
 
 	return nil
+}
+
+// checkPlanFileExists takes in a terraform.Options and checks if the plan file exists.
+// If it does not it returns a new terraform.Options with the PlanFilePath set to "" (to enable apply to be run without a plan file).
+// If it does exist, it returns the original terraform.Options.
+func checkPlanFileExists(opts *terraform.Options) (*terraform.Options, error) {
+	if _, err := os.Stat(filepath.Join(opts.TerraformDir, opts.PlanFilePath)); err != nil {
+		if !os.IsNotExist(err) {
+			return nil, err
+		}
+		newopts := new(terraform.Options)
+		*newopts = *opts
+		newopts.PlanFilePath = ""
+		return newopts, nil
+	}
+	return opts, nil
 }
