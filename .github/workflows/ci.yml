@@ -41,3 +41,4 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.txt
+        if: github.event_name != 'merge_group'
