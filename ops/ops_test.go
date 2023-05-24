@@ -54,7 +54,7 @@ func TestQuery(t *testing.T) {
 		mock := mockOperativeType(actual)
 		o := mock.Query("not_exist")
 		err := o.HasValue("nil").AsError()
-		assert.NoError(t, err)
+		assert.ErrorContains(t, err, "not found when expected")
 		assert.False(t, o.Exist)
 	})
 
