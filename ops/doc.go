@@ -4,5 +4,4 @@
 //
 // It is also possible to query the data using gjson queries.
 // This will return a ops.Operative type which can be used to compare the data.
-
 package ops
