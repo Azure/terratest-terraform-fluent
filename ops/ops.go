@@ -151,7 +151,7 @@ func (o Operative) Query(query string) Operative {
 		o.err = err
 		return o
 	}
-
+	o.Reference = fmt.Sprintf("%s?%s", o.Reference, query)
 	var bytes []byte
 	// If the actual value is a string, we assume it is JSON and try to parse it.
 	// Otherwise, we marshal it to JSON and try to parse it.
