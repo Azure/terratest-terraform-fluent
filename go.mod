@@ -7,7 +7,7 @@ require (
 	github.com/hashicorp/terraform-json v0.18.0
 	github.com/prashantv/gostub v1.1.0
 	github.com/stretchr/testify v1.8.4
-	github.com/tidwall/gjson v1.16.0
+	github.com/tidwall/gjson v1.17.0
 )
 
 require (
