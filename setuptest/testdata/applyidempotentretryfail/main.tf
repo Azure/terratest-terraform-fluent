@@ -2,15 +2,15 @@ terraform {
   required_version = ">= 1.4.0"
   required_providers {
     local = {
-      source = "hashicorp/local"
+      source  = "hashicorp/local"
       version = ">= 2.4.0"
     }
   }
 }
 
 resource "local_file" "test" {
-  content = "test"
-  filename = "test.txt"
+  content         = "test"
+  filename        = "test.txt"
   file_permission = "0644"
 }
 
@@ -22,8 +22,8 @@ resource "terraform_data" "test" {
 
   }
   provisioner "local-exec" {
-    command = "rm -f test.txt"
-    when = create
+    command = "rm -rf .terraform"
+    when    = create
   }
   depends_on = [
     local_file.test,
