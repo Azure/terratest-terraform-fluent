@@ -93,9 +93,9 @@ func (resp Response) ApplyIdempotentRetry(r Retry) *testerror.Error {
 		case 0:
 			return "", nil
 		case 2:
-			return "", errors.New("terraform configuration not idempotent")
+			return "", retry.FatalError{Underlying: errors.New("terraform configuraiton not idempotent")}
 		default:
-			return "", retry.FatalError{Underlying: errors.New("terraform plan exit code 1 or other error")}
+			return "", errors.New("terraform plan error")
 		}
 	})
 
