@@ -28,7 +28,7 @@ jobs:
       # More assembly might be required: Docker logins, GPG, etc. It all depends
       # on your needs.
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v3
+        uses: golangci/golangci-lint-action@v4
       - uses: goreleaser/goreleaser-action@v5
         with:
           distribution: goreleaser
