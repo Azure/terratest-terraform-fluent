@@ -6,7 +6,7 @@ require (
 	github.com/gruntwork-io/terratest v0.46.11
 	github.com/hashicorp/terraform-json v0.21.0
 	github.com/prashantv/gostub v1.1.0
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.9.0
 	github.com/tidwall/gjson v1.17.1
 )
 
