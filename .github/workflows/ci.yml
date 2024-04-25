@@ -33,7 +33,7 @@ jobs:
           go-version-file: ./go.mod
           cache: true
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v4
+        uses: golangci/golangci-lint-action@v5
       - name: test cover
         run: make testcoverfile
       - name: upload coverage reports to codecov
