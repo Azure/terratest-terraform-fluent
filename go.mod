@@ -4,7 +4,7 @@ go 1.21.4
 
 require (
 	github.com/gruntwork-io/terratest v0.46.14
-	github.com/hashicorp/terraform-json v0.22.0
+	github.com/hashicorp/terraform-json v0.22.1
 	github.com/prashantv/gostub v1.1.0
 	github.com/stretchr/testify v1.9.0
 	github.com/tidwall/gjson v1.17.1
