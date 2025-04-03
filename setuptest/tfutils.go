@@ -34,6 +34,9 @@ func getDefaultTerraformOptions(t *testing.T, dir string) *terraform.Options {
 	}
 
 	o := terraform.Options{
+		EnvVars: map[string]string{
+			"TF_IN_AUTOMATION": "1",
+		},
 		Logger:       logger.Default,
 		PlanFilePath: "tfplan",
 		TerraformDir: dir,

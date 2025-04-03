@@ -68,7 +68,7 @@ func TestErrorIsNilFatal(t *testing.T) {
 }
 
 func TestErrorNotNilFatal(t *testing.T) {
-	var e *Error = New("test error")
+	var e = New("test error")
 	e.ErrorNotNilFatal(t)
 }
 
@@ -82,7 +82,7 @@ func TestErrorAsError(t *testing.T) {
 }
 
 func TestErrorAsErrorNotNil(t *testing.T) {
-	var e *Error = New("test error")
+	var e = New("test error")
 	assert.Error(
 		t,
 		e.AsError(),
