@@ -46,25 +46,25 @@ func (e *Error) AsError() error {
 
 func (e *Error) ErrorIsNil(t *testing.T) {
 	if e != nil {
-		t.Errorf(e.msg)
+		t.Error(e.msg)
 	}
 }
 
 func (e *Error) ErrorIsNilFatal(t *testing.T) {
 	if e != nil {
-		t.Fatalf(e.msg)
+		t.Fatal(e.msg)
 	}
 }
 
 func (e *Error) ErrorNotNil(t *testing.T) {
 	if e == nil {
-		t.Errorf("error is nil")
+		t.Error("error is nil")
 	}
 }
 
 func (e *Error) ErrorNotNilFatal(t *testing.T) {
 	if e == nil {
-		t.Fatalf("error is nil")
+		t.Fatal("error is nil")
 	}
 }
 

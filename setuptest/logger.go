@@ -37,7 +37,7 @@ func NewStreamLogger(stream io.ReadWriter) *StreamLogger {
 	return &StreamLogger{
 		stream:         stream,
 		mu:             new(sync.Mutex),
-		outputProgress: true,
+		outputProgress: false,
 	}
 }
 
