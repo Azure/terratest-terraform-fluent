@@ -1,6 +1,8 @@
 package check
 
 import (
+	"strings"
+
 	"github.com/Azure/terratest-terraform-fluent/testerror"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 )
@@ -34,4 +36,29 @@ func (p PlanType) That(resourceName string) ThatType {
 	}
 	t.exists()
 	return t
+}
+
+// PlannedResourcesAre takes a list of resource names and checks that they all exist in the plan.
+func (p PlanType) PlannedResourcesAre(resourceNames ...string) *testerror.Error {
+	found := make(map[string]struct{})
+	msgs := make([]string, 0, len(resourceNames)+len(p.Plan.ResourceChangesMap))
+
+	for _, resourceName := range resourceNames {
+		found[resourceName] = struct{}{}
+		if _, ok := p.Plan.ResourceChangesMap[resourceName]; !ok {
+			msgs = append(msgs, "expected resource not found in plan: "+resourceName)
+		}
+	}
+
+	for resourceName := range p.Plan.ResourceChangesMap {
+		if _, ok := found[resourceName]; !ok {
+			msgs = append(msgs, "unexpected resource found in plan: "+resourceName)
+		}
+	}
+
+	if len(msgs) > 0 {
+		return testerror.Newf("planned resources do not match expected:\n\n%s", strings.Join(msgs, "\n"))
+	}
+
+	return nil
 }
