@@ -121,12 +121,12 @@ func TestStreamLogParallelLogShouldBePipeToStdoutSerialized(t *testing.T) {
 func TestStreamLoggerConcurrentLogf(t *testing.T) {
 	buff := new(bytes.Buffer)
 	logger := NewStreamLogger(buff)
-	
+
 	const numGoroutines = 10
 	const logsPerGoroutine = 100
-	
+
 	done := make(chan bool, numGoroutines)
-	
+
 	// Simulate concurrent logging from multiple goroutines
 	// (similar to how terratest calls Logf from stderr and stdout readers)
 	for i := 0; i < numGoroutines; i++ {
@@ -137,12 +137,12 @@ func TestStreamLoggerConcurrentLogf(t *testing.T) {
 			done <- true
 		}(i)
 	}
-	
+
 	// Wait for all goroutines to complete
 	for i := 0; i < numGoroutines; i++ {
 		<-done
 	}
-	
+
 	// Verify that logs were written
 	assert.NotEmpty(t, buff.String())
 }
