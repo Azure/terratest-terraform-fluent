@@ -115,3 +115,34 @@ func TestStreamLogParallelLogShouldBePipeToStdoutSerialized(t *testing.T) {
 		}
 	}
 }
+
+// TestStreamLoggerConcurrentLogf reproduces the data race issue reported in the bug.
+// This test will fail with -race flag if the data race is present.
+func TestStreamLoggerConcurrentLogf(t *testing.T) {
+	buff := new(bytes.Buffer)
+	logger := NewStreamLogger(buff)
+
+	const numGoroutines = 10
+	const logsPerGoroutine = 100
+
+	done := make(chan bool, numGoroutines)
+
+	// Simulate concurrent logging from multiple goroutines
+	// (similar to how terratest calls Logf from stderr and stdout readers)
+	for i := 0; i < numGoroutines; i++ {
+		go func(id int) {
+			for j := 0; j < logsPerGoroutine; j++ {
+				logger.Logf(t, "goroutine %d log %d", id, j)
+			}
+			done <- true
+		}(i)
+	}
+
+	// Wait for all goroutines to complete
+	for i := 0; i < numGoroutines; i++ {
+		<-done
+	}
+
+	// Verify that logs were written
+	assert.NotEmpty(t, buff.String())
+}
