@@ -43,6 +43,8 @@ func NewStreamLogger(stream io.ReadWriter) *StreamLogger {
 
 // Logf logs the given arguments to the given writer, along with a prefix of the test name.
 func (s *StreamLogger) Logf(t testing.TestingT, format string, args ...interface{}) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	// Sprintf removed as we don't want the prefixes to the log lines
 	// log := fmt.Sprintf(format, args...)
 	doLog(t, s.stream, args...)
